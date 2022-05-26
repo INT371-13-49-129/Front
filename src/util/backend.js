@@ -4,6 +4,8 @@ const stage = () => {
   switch (url) {
     case "localhost":
       return "local";
+    case "yenjai.3utilities.com":
+      return "dev";
     default:
       return null;
   }
@@ -15,7 +17,7 @@ export const baseUrl = () => {
     case "uat":
       return "";
     case "dev":
-      return "";
+      return "yenjai.3utilities.com";
     case "local":
       return "http://localhost:3000";
     default:
