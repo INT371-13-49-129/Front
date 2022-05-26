@@ -2,10 +2,10 @@
 const stage = () => {
   const url = window.location.hostname;
   switch (url) {
-    case "localhost":
-      return "local";
     case "jaidee.3utilities.com":
       return "dev";
+    case "localhost":
+      return "local";
     default:
       return null;
   }
@@ -17,7 +17,7 @@ export const baseUrl = () => {
     case "uat":
       return "";
     case "dev":
-      return "jaidee.3utilities.com";
+      return "https://jaidee.3utilities.com/backend";
     case "local":
       return "http://localhost:3000";
     default:
