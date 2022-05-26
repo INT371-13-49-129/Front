@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full flex">
+  <div class="flex flex-col item-center w-full h-full overflow-y-auto py-6">
     <router-link to="/">
       <i class="bx bx-x bx-sm absolute right-5 top-5 text-gray-500"> </i>
     </router-link>
@@ -55,7 +55,7 @@
       </div>
       <div class="text-sm text-center mx-10 mt-5 text-gray-400">
         Don't have an account yet?&nbsp;
-        <router-link to="/" class="text-gray-800 font-semibold">
+        <router-link to="/signup" class="text-gray-800 font-semibold">
           Sign up</router-link
         >
       </div>
@@ -134,7 +134,7 @@ export default {
       if (this.validate.from) {
         try {
           await this.$store.dispatch("login", this.login);
-          this.$router.replace("/");
+          this.$router.push("/");
         } catch (err) {
           console.log(err);
           const error = err.response?.data?.error;
@@ -143,7 +143,9 @@ export default {
           if (error == "Email or password is incorrect!") {
             title = "Email or password is incorrect!";
           } else if (error == "Waiting for email confirmation.") {
-            title = "Waiting for email confirmation.";
+            this.$store.commit("setSendMail", this.login.email);
+            this.$router.push("/sendmail");
+            return;
           } else {
             title = "Login failed, please try again.";
           }
