@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="w-screen h-screen fixed font-sans-thai">
+  <div id="app" class="h-full w-full fixed font-sans-thai">
     <router-view />
   </div>
 </template>
