@@ -154,6 +154,9 @@ export default {
         refer_post_id: null,
       });
       this.newPost = false;
+      this.text = "";
+      this.tags_category = [];
+      this.tags_feeling = [];
       await this.$store.dispatch("getAllPost");
     },
   },
