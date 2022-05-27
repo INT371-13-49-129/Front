@@ -79,7 +79,7 @@
       <div class="">
         <textarea
           class="focus:outline-none w-full h-40 bg-gray-100 px-6 py-4 rounded-xl mb-2"
-          v-model="text"
+          v-model.trim="text"
         ></textarea>
         <vs-select
           multiple
@@ -111,7 +111,9 @@
             {{ tag.name }}
           </vs-option>
         </vs-select>
-        <vs-button class="w-full button-login" @click="createPost()"
+        <vs-button
+          class="w-full button-login"
+          @click="text == '' ? '' : createPost()"
           >โพสต์</vs-button
         >
       </div>
