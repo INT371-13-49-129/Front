@@ -1,7 +1,7 @@
 <template>
-  <div class="w-full px-3 py-4 border-b-2">
+  <div class="w-full px-3 py-4" :class="hideComent ? '' : 'border-b-2'">
     <div class="flex items-center">
-      <vs-avatar circle>
+      <vs-avatar v-if="!hideComent" circle>
         <i class="bx bx-user"></i>
       </vs-avatar>
       <div class="ml-3">
@@ -34,52 +34,62 @@
         </div>
       </div>
     </div>
-    <div class="mt-2 break-words">
-      {{ post.text }}
-    </div>
     <div
-      class="border-gray-100 border-t-2 border-b-2 flex items-center py-2 mt-3 px-1"
-    >
-      <i
-        v-if="isLogin"
-        @click="updateEmotion(!is_emotion)"
-        :class="
-          is_emotion
-            ? 'bx bxs-heart text-xl mr-1 text-red-500 cursor-pointer'
-            : 'bx bx-heart text-xl mr-1 cursor-pointer'
-        "
-      ></i>
-      <i v-else class="bx bx-heart text-xl mr-1"></i>
-      {{ post.count_emotions == 0 ? "" : post.count_emotions }} กำลังใจ
-      <div class="flex-grow"></div>
-      <i
-        class="bx bx-message-rounded text-xl mr-1"
-        @click="showComment = !showComment"
-      ></i
-      >{{ post.count_comments == 0 ? "" : post.count_comments }} comment
-      <div class="flex-grow"></div>
-      <i class="bx bx-paper-plane text-xl mr-1"></i
-      >{{ post.count_posts == 0 ? "" : post.count_posts }} repost
+      v-html="post.text.replace(/(?:\r\n|\r|\n)/g, '<br />')"
+      class="mt-2 break-words"
+    ></div>
+    <div v-if="post.refer_post" class="p-3 border-2 rounded-xl my-4">
+      <Post :post="post.refer_post" :hideComent="true"></Post>
     </div>
-    <div
-      v-show="showComment"
-      v-for="comment in post.comments"
-      :key="comment.comment_id"
-    >
-      <Comment :comment="comment"></Comment>
-    </div>
+    <div v-if="!hideComent">
+      <div
+        class="border-gray-100 border-t-2 border-b-2 flex items-center py-2 mt-3 px-1"
+      >
+        <i
+          v-if="isLogin"
+          @click="updateEmotion(!is_emotion)"
+          :class="
+            is_emotion
+              ? 'bx bxs-heart text-xl mr-1 text-red-500 cursor-pointer'
+              : 'bx bx-heart text-xl mr-1 cursor-pointer'
+          "
+        ></i>
+        <i v-else class="bx bx-heart text-xl mr-1"></i>
+        {{ post.count_emotions == 0 ? "" : post.count_emotions }} กำลังใจ
+        <div class="flex-grow"></div>
+        <i
+          class="bx bx-message-rounded text-xl mr-1 cursor-pointer"
+          @click="showComment = !showComment"
+        ></i
+        >{{ post.count_comments == 0 ? "" : post.count_comments }} comment
+        <div class="flex-grow"></div>
+        <i
+          @click="$emit('referPost', post)"
+          class="bx bx-paper-plane text-xl mr-1"
+          :class="isLogin ? 'cursor-pointer' : ''"
+        ></i
+        >{{ post.count_posts == 0 ? "" : post.count_posts }} repost
+      </div>
+      <div
+        v-show="showComment"
+        v-for="comment in post.comments"
+        :key="comment.comment_id"
+      >
+        <Comment :comment="comment"></Comment>
+      </div>
 
-    <div class="mt-2 flex" v-if="isLogin">
-      <vs-avatar circle class="flex-shrink-0 mr-2">
-        <i class="bx bx-user"></i>
-      </vs-avatar>
-      <vs-input
-        type="text"
-        v-model.trim="newComment"
-        @keyup.enter="newComment == '' ? '' : createComment()"
-        class="input-comment flex-grow"
-        placeholder="เขียนความเห็น..."
-      />
+      <div class="mt-2 flex" v-if="isLogin">
+        <vs-avatar circle class="flex-shrink-0 mr-2">
+          <i class="bx bx-user"></i>
+        </vs-avatar>
+        <vs-input
+          type="text"
+          v-model.trim="newComment"
+          @keyup.enter="newComment == '' ? '' : createComment()"
+          class="input-comment flex-grow"
+          placeholder="เขียนความเห็น..."
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -89,6 +99,7 @@ import { mapGetters } from "vuex";
 import mixin from "@/mixin/mixin.js";
 
 export default {
+  name: "Post",
   mixins: [mixin],
   data() {
     return {
@@ -117,6 +128,10 @@ export default {
           createdAt: "",
         };
       },
+    },
+    hideComent: {
+      type: Boolean,
+      default: false,
     },
   },
   methods: {

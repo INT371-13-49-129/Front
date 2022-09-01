@@ -144,6 +144,17 @@ export default new Vuex.Store({
             (t) => t.tag.tag_type === "Category"
           ),
           ...response.data.post,
+          refer_post: response.data.post.refer_post
+            ? {
+                tags_feeling: response.data.post.refer_post.post_tags.filter(
+                  (t) => t.tag.tag_type === "Feeling"
+                ),
+                tags_category: response.data.post.refer_post.post_tags.filter(
+                  (t) => t.tag.tag_type === "Category"
+                ),
+                ...response.data.post.refer_post,
+              }
+            : null,
         };
         commit(
           "setAllPost",
@@ -174,6 +185,17 @@ export default new Vuex.Store({
                 (t) => t.tag.tag_type === "Category"
               ),
               ...post,
+              refer_post: post.refer_post
+                ? {
+                    tags_feeling: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Feeling"
+                    ),
+                    tags_category: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Category"
+                    ),
+                    ...post.refer_post,
+                  }
+                : null,
             };
           })
           .sort(

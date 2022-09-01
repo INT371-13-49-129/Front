@@ -5,9 +5,10 @@
     </vs-avatar>
     <div class="ml-2 flex-grow">
       <div class="font-semibold">{{ comment.account.username }}</div>
-      <div class="bg-gray-100 w-full rounded-lg px-3 py-2 break-all">
-        {{ comment.text }}
-      </div>
+      <div
+        v-html="comment.text.replace(/(?:\r\n|\r|\n)/g, '<br />')"
+        class="bg-gray-100 w-full rounded-lg px-3 py-2 break-all"
+      ></div>
       <div>
         <div class="flex items-center mt-1 text-sm">
           <span class="font-light text-sm from-gray-700">{{
@@ -34,7 +35,7 @@
           <i v-else class="bx bx-heart text-lg ml-2.5 mr-1"></i>
           {{ comment.emotions.length == 0 ? "" : comment.emotions.length }}
           <i
-            class="bx bx-message-rounded text-lg ml-2.5 mr-1"
+            class="bx bx-message-rounded text-lg ml-2.5 mr-1 cursor-pointer"
             @click="showComment = !showComment"
           ></i
           >{{ comment.comments.length == 0 ? "" : comment.comments.length }}
@@ -52,9 +53,10 @@
         </vs-avatar>
         <div class="ml-2 flex-grow">
           <div class="font-semibold">{{ c.account.username }}</div>
-          <div class="bg-gray-100 w-full rounded-lg px-3 py-2 break-all">
-            {{ c.text }}
-          </div>
+          <div
+            v-html="c.text.replace(/(?:\r\n|\r|\n)/g, '<br />')"
+            class="bg-gray-100 w-full rounded-lg px-3 py-2 break-all"
+          ></div>
           <div>
             <div class="flex items-center mt-1 text-sm">
               <span class="font-light text-sm from-gray-700">{{
@@ -80,7 +82,10 @@
               ></i>
               <i v-else class="bx bx-heart text-lg ml-2.5 mr-1"></i>
               {{ c.emotions.length == 0 ? "" : c.emotions.length }}
-              <i class="bx bx-message-rounded text-lg ml-2.5 mr-1"></i>ตอบกลับ
+              <i
+                class="bx bx-message-rounded text-lg ml-2.5 mr-1 cursor-pointer"
+              ></i
+              >ตอบกลับ
             </div>
           </div>
         </div>

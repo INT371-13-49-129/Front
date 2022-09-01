@@ -69,18 +69,24 @@
     </vs-sidebar>
     <div class="mt-16 xl:w-160 w-full mx-auto">
       <div v-for="post in allPost" :key="post.post_id">
-        <Post :post="post"></Post>
+        <Post :post="post" @referPost="referPost"></Post>
       </div>
     </div>
     <vs-dialog v-model="newPost">
       <template #header>
-        <h4 class="mt-2 text-xl font-semibold">สร้างโพสต์</h4>
+        <h4 class="mt-2 text-xl font-semibold">
+          {{ refer_post.post_id ? "รีโพสต์" : "สร้างโพสต์" }}
+        </h4>
       </template>
       <div class="">
         <textarea
-          class="focus:outline-none w-full h-40 bg-gray-100 px-6 py-4 rounded-xl mb-2"
+          class="focus:outline-none w-full bg-gray-100 px-6 py-4 rounded-xl mb-2"
+          :class="refer_post.post_id ? 'h-20' : 'h-40'"
           v-model.trim="text"
         ></textarea>
+        <div v-if="refer_post.post_id" class="p-3 border-2 rounded-xl mb-6">
+          <Post :post="refer_post" :hideComent="true"></Post>
+        </div>
         <vs-select
           multiple
           label="ความรู้สึก"
@@ -120,7 +126,7 @@
     </vs-dialog>
 
     <div class="fixed bottom-6 right-7" v-if="isLogin">
-      <vs-avatar circle primary class="cursor-pointer" @click="newPost = true">
+      <vs-avatar circle primary class="cursor-pointer" @click="modalNewPost">
         <i class="bx bx-plus"></i>
       </vs-avatar>
     </div>
@@ -138,6 +144,9 @@ export default {
       active: "home",
       activeSidebar: false,
       newPost: false,
+      refer_post: {
+        post_id: null,
+      },
       text: "",
     };
   },
@@ -153,13 +162,32 @@ export default {
       await this.$store.dispatch("createPost", {
         text: this.text,
         post_tags: this.tags_feeling.concat(this.tags_category),
-        refer_post_id: null,
+        refer_post_id: this.refer_post.post_id,
       });
       this.newPost = false;
+      this.refer_post = {
+        post_id: null,
+      };
       this.text = "";
       this.tags_category = [];
       this.tags_feeling = [];
       await this.$store.dispatch("getAllPost");
+    },
+    referPost(post) {
+      this.newPost = true;
+      this.refer_post = post;
+      this.text = "";
+      this.tags_category = [];
+      this.tags_feeling = [];
+    },
+    modalNewPost() {
+      this.newPost = true;
+      this.refer_post = {
+        post_id: null,
+      };
+      this.text = "";
+      this.tags_category = [];
+      this.tags_feeling = [];
     },
   },
   async mounted() {
