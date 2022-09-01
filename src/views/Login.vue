@@ -69,6 +69,8 @@
   </div>
 </template>
 <script>
+import { statusCode } from "../util/statusCode.js";
+
 export default {
   data() {
     return {
@@ -137,12 +139,12 @@ export default {
           this.$router.push("/");
         } catch (err) {
           console.log(err);
-          const error = err.response?.data?.error;
+          const error = err.response?.data?.statusCode;
           let title;
 
-          if (error == "Email or password is incorrect!") {
+          if (error == statusCode(2005)) {
             title = "Email or password is incorrect!";
-          } else if (error == "Waiting for email confirmation.") {
+          } else if (error == statusCode(2006)) {
             this.$store.commit("setSendMail", this.login.email);
             this.$router.push("/sendmail");
             return;

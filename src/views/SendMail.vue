@@ -38,6 +38,7 @@
 </template>
 <script>
 import { mapGetters } from "vuex";
+import { statusCode } from "../util/statusCode.js";
 
 export default {
   methods: {
@@ -47,10 +48,10 @@ export default {
         await this.$store.dispatch("resendMail", this.sendMail);
       } catch (err) {
         console.log(err);
-        const error = err.response?.data?.error;
+        const error = err.response?.data?.statusCode;
         let title;
 
-        if (error == "Account Status is incorrect!") {
+        if (error == statusCode(2004)) {
           title = "Account Status is incorrect!";
         } else {
           title = "An error occurred, please try again.";

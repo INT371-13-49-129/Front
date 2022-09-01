@@ -87,8 +87,7 @@ export default new Vuex.Store({
       }
       return response;
     },
-    async confirmEmail({ state }, payload) {
-      console.log(state);
+    async confirmEmail(_, payload) {
       let response = await axios.put(`${baseUrl()}/api/member/confirmEmail`, {
         confirm_email_token: payload,
       });
@@ -186,8 +185,7 @@ export default new Vuex.Store({
       }
       return response;
     },
-    async updateEmotion({ state }, payload) {
-      console.log(state);
+    async updateEmotion(_, payload) {
       let response = await axios.put(
         `${baseUrl()}/api/member/updateEmotion`,
         {
@@ -199,8 +197,7 @@ export default new Vuex.Store({
       );
       return response;
     },
-    async createComment({ state }, payload) {
-      console.log(state);
+    async createComment(_, payload) {
       let response = await axios.post(
         `${baseUrl()}/api/member/createComment`,
         {
@@ -220,8 +217,7 @@ export default new Vuex.Store({
       commit("setAllTag", response.data.tags);
       return response;
     },
-    async createPost({ state }, payload) {
-      console.log(state);
+    async createPost(_, payload) {
       let response = await axios.post(
         `${baseUrl()}/api/member/createPost`,
         {
