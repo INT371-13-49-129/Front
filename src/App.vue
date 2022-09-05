@@ -4,4 +4,8 @@
   </div>
 </template>
 
-<style></style>
+<style>
+.scroll::-webkit-scrollbar {
+  display: none;
+}
+</style>

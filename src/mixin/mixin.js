@@ -30,5 +30,9 @@ export default {
       }
       return Math.floor(seconds) + " seconds";
     },
+    fullTime(date) {
+      const d = new Date(date);
+      return d.toLocaleString();
+    },
   },
 };

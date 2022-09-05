@@ -251,6 +251,43 @@ export default new Vuex.Store({
       );
       return response;
     },
+    async updatePost(_, payload) {
+      let response = await axios.put(
+        `${baseUrl()}/api/member/updatePost`,
+        {
+          text: payload.text,
+          post_tags: payload.post_tags,
+          post_id: payload.post_id,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async deletePost(_, post_id) {
+      let response = await axios.delete(
+        `${baseUrl()}/api/member/deletePost/${post_id}`,
+        authHeader()
+      );
+      return response;
+    },
+    async updateComment(_, payload) {
+      let response = await axios.put(
+        `${baseUrl()}/api/member/updateComment`,
+        {
+          text: payload.text,
+          comment_id: payload.comment_id,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async deleteComment(_, comment_id) {
+      let response = await axios.delete(
+        `${baseUrl()}/api/member/deleteComment/${comment_id}`,
+        authHeader()
+      );
+      return response;
+    },
   },
   modules: {},
 });
