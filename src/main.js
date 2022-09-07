@@ -7,6 +7,7 @@ import Vuesax from "vuesax";
 import "boxicons/css/boxicons.min.css";
 import "vuesax/dist/vuesax.css";
 import { io } from "socket.io-client";
+import { baseUrl } from "./util/backend.js";
 
 Vue.config.productionTip = false;
 Vue.use(Vuesax, {
@@ -21,7 +22,7 @@ new Vue({
   render: (h) => h(App),
   data() {
     return {
-      socket: io(":3000"),
+      socket: io(baseUrl()),
     };
   },
 }).$mount("#app");
