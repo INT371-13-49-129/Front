@@ -8,4 +8,14 @@
 .scroll::-webkit-scrollbar {
   display: none;
 }
+
+::-webkit-scrollbar {
+  width: 0;
+  height: 3px;
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #8181818b;
+}
 </style>

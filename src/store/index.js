@@ -22,6 +22,9 @@ export default new Vuex.Store({
     isLogin: "",
     allPost: [],
     allTag: [],
+    allMessageConnect: [],
+    allAccount: [],
+    messageConnect: {},
   },
   getters: {
     getSendMail: (state) => state.sendMail,
@@ -29,6 +32,9 @@ export default new Vuex.Store({
     getAccount: (state) => state.account,
     getAllPost: (state) => state.allPost,
     getAllTag: (state) => state.allTag,
+    getAllMessageConnect: (state) => state.allMessageConnect,
+    getAllAccount: (state) => state.allAccount,
+    getMessageConnect: (state) => state.messageConnect,
   },
   mutations: {
     setAccount(state, payload) {
@@ -48,6 +54,15 @@ export default new Vuex.Store({
     },
     setAllTag(state, payload) {
       state.allTag = payload;
+    },
+    setAllMessageConnect(state, payload) {
+      state.allMessageConnect = payload;
+    },
+    setAllAccount(state, payload) {
+      state.allAccount = payload;
+    },
+    setMessageConnect(state, payload) {
+      state.messageConnect = payload;
     },
   },
   actions: {
@@ -284,6 +299,62 @@ export default new Vuex.Store({
     async deleteComment(_, comment_id) {
       let response = await axios.delete(
         `${baseUrl()}/api/member/deleteComment/${comment_id}`,
+        authHeader()
+      );
+      return response;
+    },
+    async getAllMessageConnect({ commit }) {
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getAllMessageConnect`,
+        authHeader()
+      );
+      const messageConnects = response.data.messageConnects.sort(
+        (a, b) =>
+          new Date(b.last_messages).getTime() -
+          new Date(a.last_messages).getTime()
+      );
+      commit("setAllMessageConnect", messageConnects);
+      return response;
+    },
+    async getAllAccount({ commit }) {
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getAllAccount`,
+        authHeader()
+      );
+      commit("setAllAccount", response.data.accounts);
+      return response;
+    },
+    async getMessageConnect({ commit }, payload) {
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getMessageConnect/${payload}`,
+        authHeader()
+      );
+      const messageConnect = response.data.messageConnect.messages.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      response.data.messageConnect.messages = messageConnect;
+      commit("setMessageConnect", response.data.messageConnect);
+      return response;
+    },
+    async readMessage(_, payload) {
+      let response = await axios.put(
+        `${baseUrl()}/api/member/readMessage`,
+        {
+          message_id: payload.message_id,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async createMessage(_, payload) {
+      let response = await axios.post(
+        `${baseUrl()}/api/member/createMessage`,
+        {
+          account_id_2: payload.account_id_2,
+          text: payload.text,
+          message_connect_id: payload.message_connect_id,
+        },
         authHeader()
       );
       return response;

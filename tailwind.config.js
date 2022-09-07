@@ -2,6 +2,9 @@ module.exports = {
   content: ["./public/**/*.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      dropShadow: {
+        all: "0 0 4px rgba(0, 0, 0, 0.15)",
+      },
       colors: {
         primary: "#5CB5E8",
       },
@@ -22,6 +25,9 @@ module.exports = {
         336: "84rem",
         352: "88rem",
         368: "92rem",
+      },
+      height: {
+        "95/100": "95%",
       },
       fontFamily: {
         "sans-thai": ["IBM Plex Sans Thai Looped", "sans-serif"],

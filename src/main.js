@@ -6,6 +6,7 @@ import "./assets/tailwind.css";
 import Vuesax from "vuesax";
 import "boxicons/css/boxicons.min.css";
 import "vuesax/dist/vuesax.css";
+import { io } from "socket.io-client";
 
 Vue.config.productionTip = false;
 Vue.use(Vuesax, {
@@ -18,4 +19,9 @@ new Vue({
   router,
   store,
   render: (h) => h(App),
+  data() {
+    return {
+      socket: io(":3000"),
+    };
+  },
 }).$mount("#app");
