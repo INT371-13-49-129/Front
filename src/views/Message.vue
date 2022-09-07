@@ -178,10 +178,10 @@ export default {
       messageCon: "getMessageConnect",
     }),
     getOtherAccount() {
-      if (
-        this.messageCon.account_1 &&
-        this.messageCon.account_1.account_id == this.account.account_id
-      ) {
+      if (!this.messageCon.account_1) {
+        return {};
+      }
+      if (this.messageCon.account_1.account_id == this.account.account_id) {
         return this.messageCon.account_2;
       } else {
         return this.messageCon.account_1;
