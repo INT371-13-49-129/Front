@@ -14,7 +14,9 @@
           <vs-avatar circle>
             <i class="bx bx-user"></i>
           </vs-avatar>
-          <div class="text-xl font-semibold ml-4 flex-grow">Name</div>
+          <div class="text-xl font-semibold ml-4 flex-grow">
+            {{ getOtherAccount.username }}
+          </div>
           <div><i class="bx bx-info-circle text-3xl"></i></div>
         </div>
         <div class="flex-grow w-full flex flex-col-reverse overflow-y-auto">
@@ -175,6 +177,16 @@ export default {
       account: "getAccount",
       messageCon: "getMessageConnect",
     }),
+    getOtherAccount() {
+      if (
+        this.messageCon.account_1 &&
+        this.messageCon.account_1.account_id == this.account.account_id
+      ) {
+        return this.messageCon.account_2;
+      } else {
+        return this.messageCon.account_1;
+      }
+    },
   },
   watch: {
     "$route.params.account_id": async function () {
