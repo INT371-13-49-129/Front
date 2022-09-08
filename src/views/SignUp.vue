@@ -142,6 +142,8 @@
   </div>
 </template>
 <script>
+import { statusCode } from "../util/statusCode.js";
+
 export default {
   data() {
     return {
@@ -279,14 +281,12 @@ export default {
           this.$router.push("/sendmail");
         } catch (err) {
           console.log(err);
-          const error = err.response?.data?.error;
+          const error = err.response?.data?.statusCode;
           let title;
 
-          if (error == "Username Already exists") {
+          if (error == statusCode(2001)) {
             title = "Username Already exists";
-          } else if (error == "Email Already exists") {
-            title = "Email Already exists.";
-          } else if (error == "Email Already exists") {
+          } else if (error == statusCode(2002)) {
             title = "Email Already exists.";
           } else {
             title = "Sign Up failed, please try again.";

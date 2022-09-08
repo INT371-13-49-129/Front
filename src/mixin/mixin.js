@@ -30,5 +30,22 @@ export default {
       }
       return Math.floor(seconds) + " seconds";
     },
+    fullTime(date) {
+      const d = new Date(date);
+      return d.toLocaleString();
+    },
+    getTime(date) {
+      const d = new Date(date);
+      const hours = this.format_two_digits(d.getHours());
+      const minutes = this.format_two_digits(d.getMinutes());
+      return hours + ":" + minutes;
+    },
+    format_two_digits(n) {
+      return n < 10 ? "0" + n : n;
+    },
+    getDate(date) {
+      const d = new Date(date);
+      return d.toLocaleDateString();
+    },
   },
 };

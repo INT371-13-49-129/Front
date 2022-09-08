@@ -39,6 +39,16 @@ const routes = [
     name: "ConfirmEmail",
     component: () => import("../views/ConfirmEmail.vue"),
   },
+  {
+    path: "/messages",
+    name: "Messages",
+    component: () => import("../views/AllMessage.vue"),
+  },
+  {
+    path: "/messages/:account_id",
+    name: "Message",
+    component: () => import("../views/Message.vue"),
+  },
 ];
 
 const router = new VueRouter({

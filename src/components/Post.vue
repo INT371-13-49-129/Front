@@ -1,7 +1,7 @@
 <template>
-  <div class="w-full px-3 py-4 border-b-2">
+  <div class="w-full px-3 py-4" :class="hideComent ? '' : 'border-b-2'">
     <div class="flex items-center">
-      <vs-avatar circle>
+      <vs-avatar v-if="!hideComent" circle>
         <i class="bx bx-user"></i>
       </vs-avatar>
       <div class="ml-3">
@@ -33,54 +33,204 @@
           {{ timeSince(post.createdAt) }}
         </div>
       </div>
-    </div>
-    <div class="mt-2 break-words">
-      {{ post.text }}
-    </div>
-    <div
-      class="border-gray-100 border-t-2 border-b-2 flex items-center py-2 mt-3 px-1"
-    >
-      <i
-        v-if="isLogin"
-        @click="updateEmotion(!is_emotion)"
-        :class="
-          is_emotion
-            ? 'bx bxs-heart text-xl mr-1 text-red-500 cursor-pointer'
-            : 'bx bx-heart text-xl mr-1 cursor-pointer'
-        "
-      ></i>
-      <i v-else class="bx bx-heart text-xl mr-1"></i>
-      {{ post.count_emotions == 0 ? "" : post.count_emotions }} กำลังใจ
-      <div class="flex-grow"></div>
-      <i
-        class="bx bx-message-rounded text-xl mr-1"
-        @click="showComment = !showComment"
-      ></i
-      >{{ post.count_comments == 0 ? "" : post.count_comments }} comment
-      <div class="flex-grow"></div>
-      <i class="bx bx-paper-plane text-xl mr-1"></i
-      >{{ post.count_posts == 0 ? "" : post.count_posts }} repost
+      <div v-if="!hideComent" class="h-full flex-grow flex justify-end">
+        <i
+          v-if="isLogin"
+          class="bx bx-dots-horizontal-rounded text-xl cursor-pointer"
+          @click="modalActive = true"
+        ></i>
+      </div>
     </div>
     <div
-      v-show="showComment"
-      v-for="comment in post.comments"
-      :key="comment.comment_id"
-    >
-      <Comment :comment="comment"></Comment>
+      v-html="post.text.replace(/(?:\r\n|\r|\n)/g, '<br />')"
+      class="mt-2 break-words"
+    ></div>
+    <div v-if="post.refer_post" class="p-3 border-2 rounded-xl my-4">
+      <Post :post="post.refer_post" :hideComent="true"></Post>
     </div>
+    <div v-if="!hideComent">
+      <div
+        class="border-gray-100 border-t-2 border-b-2 flex items-center py-2 mt-3 px-1"
+      >
+        <i
+          v-if="isLogin"
+          @click="updateEmotion(!is_emotion)"
+          :class="
+            is_emotion
+              ? 'bx bxs-heart text-xl mr-1 text-red-500 cursor-pointer'
+              : 'bx bx-heart text-xl mr-1 cursor-pointer'
+          "
+        ></i>
+        <i v-else class="bx bx-heart text-xl mr-1"></i>
+        {{ post.count_emotions == 0 ? "" : post.count_emotions }} กำลังใจ
+        <div class="flex-grow"></div>
+        <i
+          class="bx bx-message-rounded text-xl mr-1 cursor-pointer"
+          @click="showComment = !showComment"
+        ></i
+        >{{ post.count_comments == 0 ? "" : post.count_comments }} comment
+        <div class="flex-grow"></div>
+        <i
+          @click="$emit('referPost', post)"
+          class="bx bx-paper-plane text-xl mr-1"
+          :class="isLogin ? 'cursor-pointer' : ''"
+        ></i
+        >{{ post.count_posts == 0 ? "" : post.count_posts }} repost
+      </div>
+      <div
+        v-show="showComment"
+        v-for="comment in post.comments"
+        :key="comment.comment_id"
+      >
+        <Comment :comment="comment"></Comment>
+      </div>
 
-    <div class="mt-2 flex" v-if="isLogin">
-      <vs-avatar circle class="flex-shrink-0 mr-2">
-        <i class="bx bx-user"></i>
-      </vs-avatar>
-      <vs-input
-        type="text"
-        v-model.trim="newComment"
-        @keyup.enter="newComment == '' ? '' : createComment()"
-        class="input-comment flex-grow"
-        placeholder="เขียนความเห็น..."
-      />
+      <div class="mt-2 flex" v-if="isLogin">
+        <vs-avatar circle class="flex-shrink-0 mr-2">
+          <i class="bx bx-user"></i>
+        </vs-avatar>
+        <vs-input
+          type="text"
+          v-model.trim="newComment"
+          @keyup.enter="newComment == '' ? '' : createComment()"
+          class="input-comment flex-grow"
+          placeholder="เขียนความเห็น..."
+        />
+      </div>
     </div>
+    <vs-dialog v-model="modalActive">
+      <template #header>
+        <div class="mt-2 text-lg font-semibold">จัดการ Post</div>
+      </template>
+      <vs-button
+        v-if="isLogin && post.account.account_id == account.account_id"
+        @click="$emit('editPost', post)"
+        shadow
+        block
+        border
+        size="large"
+      >
+        <i class="bx bx-edit-alt mr-2"></i>แก้ไขโพสต์
+      </vs-button>
+      <vs-button
+        v-if="post.log_edits.length > 0"
+        @click="modalLogEdit = true"
+        shadow
+        block
+        border
+        size="large"
+      >
+        <i class="bx bx-time-five mr-2"></i>ประวัติการแก้ไข
+      </vs-button>
+      <vs-button
+        v-if="isLogin && post.account.account_id != account.account_id"
+        danger
+        border
+        block
+        size="large"
+      >
+        <i class="bx bxs-report mr-2"></i>รายงานโพสต์
+      </vs-button>
+      <vs-button
+        v-if="isLogin && post.account.account_id == account.account_id"
+        @click="modalDelete = true"
+        danger
+        border
+        block
+        size="large"
+      >
+        <i class="bx bx-trash mr-2"></i>ลบโพสต์
+      </vs-button>
+    </vs-dialog>
+    <vs-dialog v-model="modalLogEdit">
+      <template #header>
+        <div class="mt-2 text-lg font-semibold">ประวัติการแก้ไขโพสต์</div>
+      </template>
+      <div>
+        <div class="font-medium">{{ fullTime(post.createdAt) }}</div>
+        <div v-for="log in post.log_edits" :key="log.log_edit_id">
+          <div class="p-3 border-2 rounded-xl mb-6">
+            <div>
+              <span class="font-medium">ความรู้สึก :</span>
+              <span
+                v-for="post_tag in log.log_data.post_tags.filter(
+                  (t) => t.tag.tag_type === 'Feeling'
+                )"
+                :key="post_tag.post_tag_id"
+                class="mr-0.5"
+                >{{ post_tag.tag.name }}
+              </span>
+            </div>
+            <div>
+              <span class="font-medium">หมวดหมู่ :</span>
+              <span
+                v-for="post_tag in log.log_data.post_tags.filter(
+                  (t) => t.tag.tag_type === 'Category'
+                )"
+                :key="post_tag.post_tag_id"
+                class="mr-0.5"
+                >{{ post_tag.tag.name }}
+              </span>
+            </div>
+            <div
+              v-html="log.log_data.text.replace(/(?:\r\n|\r|\n)/g, '<br />')"
+              class="mt-2 break-words"
+            ></div>
+          </div>
+          <div class="font-medium">{{ fullTime(log.createdAt) }}</div>
+        </div>
+        <div class="p-3 border-2 rounded-xl mb-6">
+          <div>
+            <span class="font-medium">ความรู้สึก :</span>
+            <span
+              v-for="post_tag in post.post_tags.filter(
+                (t) => t.tag.tag_type === 'Feeling'
+              )"
+              :key="post_tag.post_tag_id"
+              class="mr-0.5"
+              >{{ post_tag.tag.name }}
+            </span>
+          </div>
+          <div>
+            <span class="font-medium">หมวดหมู่ :</span>
+            <span
+              v-for="post_tag in post.post_tags.filter(
+                (t) => t.tag.tag_type === 'Category'
+              )"
+              :key="post_tag.post_tag_id"
+              class="mr-0.5"
+              >{{ post_tag.tag.name }}
+            </span>
+          </div>
+          <div
+            v-html="post.text.replace(/(?:\r\n|\r|\n)/g, '<br />')"
+            class="mt-2 break-words"
+          ></div>
+        </div>
+      </div>
+    </vs-dialog>
+    <vs-dialog v-model="modalDelete">
+      <template #header>
+        <div class="mt-2 text-lg font-semibold">ลบโพสต์</div>
+      </template>
+      <div class="text-base font-semibold">ต้องการลบโพสต์นี้ใช่ไหม ?</div>
+      <div class="p-3 border-2 rounded-xl my-4 border-red-300">
+        <Post :post="post" :hideComent="true"></Post>
+      </div>
+      <vs-button
+        v-if="isLogin && post.account.account_id == account.account_id"
+        @click="deletePost()"
+        danger
+        border
+        block
+        size="large"
+      >
+        <i class="bx bx-trash mr-2"></i>ลบโพสต์
+      </vs-button>
+      <vs-button @click="modalDelete = false" shadow block border size="large">
+        ยกเลิก
+      </vs-button>
+    </vs-dialog>
   </div>
 </template>
 <script>
@@ -89,11 +239,15 @@ import { mapGetters } from "vuex";
 import mixin from "@/mixin/mixin.js";
 
 export default {
+  name: "Post",
   mixins: [mixin],
   data() {
     return {
       newComment: "",
       showComment: false,
+      modalActive: false,
+      modalLogEdit: false,
+      modalDelete: false,
     };
   },
   components: {
@@ -118,6 +272,10 @@ export default {
         };
       },
     },
+    hideComent: {
+      type: Boolean,
+      default: false,
+    },
   },
   methods: {
     async updateEmotion(is_emotion) {
@@ -141,6 +299,21 @@ export default {
       });
       this.showComment = true;
       this.newComment = "";
+    },
+    async deletePost() {
+      try {
+        await this.$store.dispatch("deletePost", this.post.post_id);
+        this.$vs.notification({
+          progress: "auto",
+          flat: true,
+          color: "primary",
+          position: "top-right",
+          title: "ลบโพสต์สำเร็จ",
+        });
+        await this.$store.dispatch("getAllPost");
+      } catch (error) {
+        console.log(error);
+      }
     },
   },
   computed: {
