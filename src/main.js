@@ -22,7 +22,7 @@ new Vue({
   render: (h) => h(App),
   data() {
     return {
-      socket: io(baseUrl()),
+      socket: io("https://jaid.onthewifi.com/"),
     };
   },
 }).$mount("#app");

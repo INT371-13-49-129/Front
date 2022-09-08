@@ -132,7 +132,6 @@ export default {
     const loading = this.$vs.loading();
     await this.getData();
     loading.close();
-    console.log(this.$root.socket);
 
     let vm = this;
     this.$root.socket.on(
