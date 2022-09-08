@@ -31,6 +31,7 @@ jobs:
           host: "52.141.58.2"                          # ${{ secrets.HOSTNAME }}
           username: "Int_372_admin"                      # ${{ secrets.USERNAME }}
           password: Int_372_admin                      # ${{ secrets.PASSWORD }}
+
           script: |
             cd ./Front
             docker-compose down
