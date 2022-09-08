@@ -43,11 +43,25 @@ const routes = [
     path: "/messages",
     name: "Messages",
     component: () => import("../views/AllMessage.vue"),
+    meta: {
+      auth: true,
+    },
   },
   {
     path: "/messages/:account_id",
     name: "Message",
     component: () => import("../views/Message.vue"),
+    meta: {
+      auth: true,
+    },
+  },
+  {
+    path: "/proflie",
+    name: "MyProflie",
+    component: () => import("../views/Proflie.vue"),
+    meta: {
+      auth: true,
+    },
   },
 ];
 
@@ -61,6 +75,9 @@ router.beforeEach(async (to, from, next) => {
   await store.dispatch("getAccount");
   console.log(store.getters.isLogin);
   if (to.meta.noAuth && store.getters.isLogin) {
+    next({ path: "/" });
+  }
+  if (to.meta.auth && !store.getters.isLogin) {
     next({ path: "/" });
   }
   next();

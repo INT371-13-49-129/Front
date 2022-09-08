@@ -19,7 +19,7 @@
           </vs-avatar>
           <div class="ml-4">
             <div class="font-semibold text-xl break-all">
-              {{ isLogin ? account.username : "Username" }}
+              {{ isLogin ? account.username : "Guest" }}
             </div>
           </div>
         </div>
@@ -30,7 +30,7 @@
         </template>
         <div class="text-lg" @click="$router.push('/')">Home</div>
       </vs-sidebar-item>
-      <vs-sidebar-item id="Messages">
+      <vs-sidebar-item id="Messages" v-if="isLogin">
         <template #icon>
           <i
             class="bx bx-message-rounded"
