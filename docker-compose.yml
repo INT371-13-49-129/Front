@@ -1,8 +1,10 @@
 version: "3"
 services:
   frontend:
-    image: ghcr.io/int371-13-49-129/int371front:dev
     container_name: frontend
+    image: ghcr.io/int371-13-49-129/int371front:dev
+    ports:
+      - "80:80"
     networks:
        allnetwork:
           ipv4_address: 172.20.0.2
