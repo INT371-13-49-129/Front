@@ -7,7 +7,7 @@ import Vuesax from "vuesax";
 import "boxicons/css/boxicons.min.css";
 import "vuesax/dist/vuesax.css";
 import { io } from "socket.io-client";
-import { baseUrl } from "./util/backend.js";
+// import { baseUrl } from "./util/backend.js";
 
 Vue.config.productionTip = false;
 Vue.use(Vuesax, {
