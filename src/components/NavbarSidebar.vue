@@ -3,23 +3,44 @@
     <vs-navbar shadow square center-collapsed v-model="active">
       <template #left>
         <vs-avatar circle @click="activeSidebar = !activeSidebar" class="my-2">
-          <i class="bx bx-user"></i>
+          <img
+            v-if="account && account.image_url"
+            :src="getFile(account.image_url)"
+            alt=""
+          />
+          <i v-else class="bx bx-user"></i>
         </vs-avatar>
       </template>
-      <img src="../assets/logo.png" width="83.45px" height="28px" />
+      <img
+        src="../assets/logo.png"
+        width="83.45px"
+        height="28px"
+        @click="$router.push('/')"
+      />
       <template #right>
-        <img src="../assets/img/chat.svg" width="40px" height="40px" />
+        <img
+          v-if="isLogin"
+          src="../assets/img/chat.svg"
+          width="40px"
+          height="40px"
+          @click="$router.push('/messages')"
+        />
       </template>
     </vs-navbar>
     <vs-sidebar absolute v-model="active" :open.sync="activeSidebar">
       <template #logo>
-        <div class="flex items-center -ml-2">
+        <div class="flex items-center -ml-2" @click="$router.push('/profile')">
           <vs-avatar circle>
-            <i class="bx bx-user"></i>
+            <img
+              v-if="account && account.image_url"
+              :src="getFile(account.image_url)"
+              alt=""
+            />
+            <i v-else class="bx bx-user"></i>
           </vs-avatar>
           <div class="ml-4">
             <div class="font-semibold text-xl break-all">
-              {{ isLogin ? account.username : "Username" }}
+              {{ isLogin ? account.username : "Guest" }}
             </div>
           </div>
         </div>
@@ -30,7 +51,7 @@
         </template>
         <div class="text-lg" @click="$router.push('/')">Home</div>
       </vs-sidebar-item>
-      <vs-sidebar-item id="Messages">
+      <vs-sidebar-item id="Messages" v-if="isLogin">
         <template #icon>
           <i
             class="bx bx-message-rounded"
@@ -79,9 +100,11 @@
   </div>
 </template>
 <script>
+import mixin from "@/mixin/mixin.js";
 import { mapGetters } from "vuex";
 
 export default {
+  mixins: [mixin],
   data() {
     return {
       active: this.$route.name,
@@ -102,3 +125,9 @@ export default {
   },
 };
 </script>
+<style scoped>
+.vs-sidebar-content .vs-sidebar__logo img {
+  max-width: 120px;
+  max-height: 100% !important;
+}
+</style>

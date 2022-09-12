@@ -29,6 +29,9 @@ module.exports = {
       height: {
         "95/100": "95%",
       },
+      width: {
+        "30/100": "30%",
+      },
       fontFamily: {
         "sans-thai": ["IBM Plex Sans Thai Looped", "sans-serif"],
       },

@@ -10,9 +10,14 @@
       <div
         class="flex flex-col filter xl:drop-shadow-all xl:w-3/5 w-full xl:mt-3 xl:h-95/100 bg-white rounded-2xl p-4 overflow-y-auto"
       >
-        <div class="flex items-center">
+        <div class="flex items-center mb-2">
           <vs-avatar circle>
-            <i class="bx bx-user"></i>
+            <img
+              v-if="getOtherAccount.image_url"
+              :src="getFile(getOtherAccount.image_url)"
+              alt=""
+            />
+            <i v-else class="bx bx-user"></i>
           </vs-avatar>
           <div class="text-xl font-semibold ml-4 flex-grow">
             {{ getOtherAccount.username }}
@@ -28,12 +33,12 @@
               <div
                 class="text-gray-400 text-sm mt-2"
                 v-if="
-                  !sameDay(
-                    message.createdAt,
-                    messageCon.messages[i + 1]
-                      ? messageCon.messages[i + 1].createdAt
-                      : messageCon.createdAt
-                  )
+                  messageCon.messages[i + 1]
+                    ? !sameDay(
+                        message.createdAt,
+                        messageCon.messages[i + 1].createdAt
+                      )
+                    : true
                 "
               >
                 {{ getDate(message.createdAt) }}
@@ -69,9 +74,7 @@
           </div>
           <div class="flex justify-center items-center gap-2">
             <div class="flex-grow border-b-2"></div>
-            <div class="text-gray-400">
-              {{ fullTime(messageCon.createdAt) }} เริ่มการสนทนา
-            </div>
+            <div class="text-gray-400">เริ่มการสนทนา</div>
             <div class="flex-grow border-b-2"></div>
           </div>
         </div>
