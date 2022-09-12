@@ -1,7 +1,12 @@
 <template>
   <div class="mt-1 flex">
     <vs-avatar circle class="flex-shrink-0">
-      <i class="bx bx-user"></i>
+      <img
+        v-if="comment.account.image_url"
+        :src="getFile(comment.account.image_url)"
+        alt=""
+      />
+      <i v-else class="bx bx-user"></i>
     </vs-avatar>
     <div class="ml-2 flex-grow">
       <div class="flex">
@@ -57,7 +62,12 @@
         class="mt-1 flex"
       >
         <vs-avatar circle class="flex-shrink-0">
-          <i class="bx bx-user"></i>
+          <img
+            v-if="c.account.image_url"
+            :src="getFile(c.account.image_url)"
+            alt=""
+          />
+          <i v-else class="bx bx-user"></i>
         </vs-avatar>
         <div class="ml-2 flex-grow">
           <div class="flex">
@@ -108,7 +118,12 @@
       </div>
       <div class="mt-2 flex" v-if="isLogin">
         <vs-avatar circle class="flex-shrink-0 mr-2">
-          <i class="bx bx-user"></i>
+          <img
+            v-if="account.image_url"
+            :src="getFile(account.image_url)"
+            alt=""
+          />
+          <i v-else class="bx bx-user"></i>
         </vs-avatar>
         <vs-input
           type="text"

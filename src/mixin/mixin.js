@@ -1,3 +1,5 @@
+import { baseUrl } from "../util/backend.js";
+
 export default {
   data() {
     return {};
@@ -46,6 +48,9 @@ export default {
     getDate(date) {
       const d = new Date(date);
       return d.toLocaleDateString();
+    },
+    getFile(file_id) {
+      return `${baseUrl()}/api/member/getFile/${file_id}`;
     },
   },
 };

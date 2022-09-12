@@ -1,8 +1,13 @@
 <template>
   <div class="w-full px-3 py-4" :class="hideComent ? '' : 'border-b-2'">
     <div class="flex items-center">
-      <vs-avatar v-if="!hideComent" circle>
-        <i class="bx bx-user"></i>
+      <vs-avatar class="flex-shrink-0" circle>
+        <img
+          v-if="post.account.image_url"
+          :src="getFile(post.account.image_url)"
+          alt=""
+        />
+        <i v-else class="bx bx-user"></i>
       </vs-avatar>
       <div class="ml-3">
         <div class="font-semibold text-lg">
@@ -87,7 +92,12 @@
 
       <div class="mt-2 flex" v-if="isLogin">
         <vs-avatar circle class="flex-shrink-0 mr-2">
-          <i class="bx bx-user"></i>
+          <img
+            v-if="account.image_url"
+            :src="getFile(account.image_url)"
+            alt=""
+          />
+          <i v-else class="bx bx-user"></i>
         </vs-avatar>
         <vs-input
           type="text"
@@ -310,7 +320,7 @@ export default {
           position: "top-right",
           title: "ลบโพสต์สำเร็จ",
         });
-        await this.$store.dispatch("getAllPost");
+        this.$emit("getAllPost");
       } catch (error) {
         console.log(error);
       }

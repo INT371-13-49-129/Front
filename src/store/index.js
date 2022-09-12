@@ -21,20 +21,26 @@ export default new Vuex.Store({
     sendMail: "",
     isLogin: "",
     allPost: [],
+    allMyPost: [],
     allTag: [],
+    allTopic: [],
     allMessageConnect: [],
     allAccount: [],
     messageConnect: {},
+    currentPage: "",
   },
   getters: {
     getSendMail: (state) => state.sendMail,
     isLogin: (state) => state.isLogin,
     getAccount: (state) => state.account,
     getAllPost: (state) => state.allPost,
+    getAllMyPost: (state) => state.allMyPost,
     getAllTag: (state) => state.allTag,
+    getAllTopic: (state) => state.allTopic,
     getAllMessageConnect: (state) => state.allMessageConnect,
     getAllAccount: (state) => state.allAccount,
     getMessageConnect: (state) => state.messageConnect,
+    getCurrentPage: (state) => state.currentPage,
   },
   mutations: {
     setAccount(state, payload) {
@@ -52,8 +58,14 @@ export default new Vuex.Store({
     setAllPost(state, payload) {
       state.allPost = payload;
     },
+    setAllMyPost(state, payload) {
+      state.allMyPost = payload;
+    },
     setAllTag(state, payload) {
       state.allTag = payload;
+    },
+    setAllTopic(state, payload) {
+      state.allTopic = payload;
     },
     setAllMessageConnect(state, payload) {
       state.allMessageConnect = payload;
@@ -63,6 +75,9 @@ export default new Vuex.Store({
     },
     setMessageConnect(state, payload) {
       state.messageConnect = payload;
+    },
+    setCurrentPage(state, payload) {
+      state.currentPage = payload;
     },
   },
   actions: {
@@ -171,9 +186,18 @@ export default new Vuex.Store({
               }
             : null,
         };
+        let set = "setAllPost";
+        let all = "allPost";
+        if (state.currentPage == "Home") {
+          set = "setAllPost";
+          all = "allPost";
+        } else if (state.currentPage == "MyProfile") {
+          set = "setAllMyPost";
+          all = "allMyPost";
+        }
         commit(
-          "setAllPost",
-          state.allPost.map((p) => (p.post_id == post.post_id ? post : p))
+          set,
+          state[all].map((p) => (p.post_id == post.post_id ? post : p))
         );
       }
       return response;
@@ -222,6 +246,50 @@ export default new Vuex.Store({
       }
       return response;
     },
+    async getAllMyPost({ commit, dispatch }) {
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getAllMyPost`,
+        authHeader()
+      );
+      if (response.status == 200) {
+        const allMyPost = response.data.posts
+          .map((post) => {
+            return {
+              count_posts: post.posts.length,
+              count_emotions: post.emotions.length,
+              count_comments: post.comments.reduce(
+                (p, v) => p + v.comments.length + 1,
+                0
+              ),
+              tags_feeling: post.post_tags.filter(
+                (t) => t.tag.tag_type === "Feeling"
+              ),
+              tags_category: post.post_tags.filter(
+                (t) => t.tag.tag_type === "Category"
+              ),
+              ...post,
+              refer_post: post.refer_post
+                ? {
+                    tags_feeling: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Feeling"
+                    ),
+                    tags_category: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Category"
+                    ),
+                    ...post.refer_post,
+                  }
+                : null,
+            };
+          })
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        dispatch("getAccount");
+        commit("setAllMyPost", allMyPost);
+      }
+      return response;
+    },
     async updateEmotion(_, payload) {
       let response = await axios.put(
         `${baseUrl()}/api/member/updateEmotion`,
@@ -252,6 +320,14 @@ export default new Vuex.Store({
         authHeader()
       );
       commit("setAllTag", response.data.tags);
+      return response;
+    },
+    async getAllTopic({ commit }) {
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getAllTopic`,
+        authHeader()
+      );
+      commit("setAllTopic", response.data.topics);
       return response;
     },
     async createPost(_, payload) {
@@ -354,6 +430,23 @@ export default new Vuex.Store({
           account_id_2: payload.account_id_2,
           text: payload.text,
           message_connect_id: payload.message_connect_id,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async updateAccountProfile(_, payload) {
+      let response = await axios.put(
+        `${baseUrl()}/api/member/updateAccountProfile`,
+        {
+          username: payload.username,
+          gender: payload.gender,
+          bio: payload.bio,
+          date_of_birth: payload.date_of_birth,
+          image_url: payload.image_url,
+          cover_image_url: payload.cover_image_url,
+          is_listener: payload.is_listener,
+          account_topics: payload.account_topics,
         },
         authHeader()
       );

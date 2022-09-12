@@ -56,9 +56,17 @@ const routes = [
     },
   },
   {
-    path: "/proflie",
-    name: "MyProflie",
-    component: () => import("../views/Proflie.vue"),
+    path: "/profile",
+    name: "MyProfile",
+    component: () => import("../views/Profile.vue"),
+    meta: {
+      auth: true,
+    },
+  },
+  {
+    path: "/profile/edit",
+    name: "EditProfile",
+    component: () => import("../views/EditProfile.vue"),
     meta: {
       auth: true,
     },

@@ -20,7 +20,8 @@
             circle
             @click="toMessage(ac.account_id)"
           >
-            <i class="bx bx-user"></i>
+            <img v-if="ac.image_url" :src="getFile(ac.image_url)" alt="" />
+            <i v-else class="bx bx-user"></i>
           </vs-avatar>
           <div
             @click="toMessage(ac.account_id)"
@@ -42,7 +43,12 @@
           @click="toMessage(getOtherAccount(messageConnect).account_id)"
         >
           <vs-avatar class="flex-shrink-0" circle>
-            <i class="bx bx-user"></i>
+            <img
+              v-if="getOtherAccount(messageConnect).image_url"
+              :src="getFile(getOtherAccount(messageConnect).image_url)"
+              alt=""
+            />
+            <i v-else class="bx bx-user"></i>
           </vs-avatar>
           <div class="flex-grow truncate ml-4">
             <div class="font-semibold">
