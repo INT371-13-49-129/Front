@@ -17,7 +17,7 @@
           <vs-avatar size="70" circle class="ml-6">
             <img
               v-if="editAccount.image_url || upLoadFile"
-              :src="upLoadFile ? img : editAccount.image_url"
+              :src="upLoadFile ? img : getFile(editAccount.image_url)"
               alt=""
             />
             <i v-else class="bx bx-user"></i>
@@ -34,7 +34,7 @@
               <vs-avatar circle class="flex-shrink-0 mr-4">
                 <img
                   v-if="editAccount.image_url || upLoadFile"
-                  :src="upLoadFile ? img : editAccount.image_url"
+                  :src="upLoadFile ? img : getFile(editAccount.image_url)"
                   alt=""
                 />
                 <i v-else class="bx bx-user"></i>
@@ -193,6 +193,7 @@
 </template>
 <script>
 import axios from "axios";
+import mixin from "@/mixin/mixin.js";
 import { baseUrl } from "../util/backend.js";
 import { authHeader } from "../store/index.js";
 import { mapGetters } from "vuex";
@@ -200,6 +201,7 @@ import { statusCode } from "../util/statusCode.js";
 import NavbarSidebar from "@/components/NavbarSidebar.vue";
 
 export default {
+  mixins: [mixin],
   data() {
     return {
       editAccount: {
@@ -319,9 +321,6 @@ export default {
         account_topics: this.account.account_topics.map((at) => {
           return { ...at.topic, account_topic_id: at.account_topic_id };
         }),
-        image_url: this.account.image_url
-          ? `${baseUrl()}/api/member/getFile/${this.account.image_url}`
-          : null,
       };
     }
   },
