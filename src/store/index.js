@@ -556,6 +556,22 @@ export default new Vuex.Store({
       );
       return response;
     },
+
+    async createPostArticle(_, payload) {
+      let response = await axios.post(
+        `${baseUrl()}/api/member/createPostArticle`,
+        {
+          text: payload.text,
+          tag_id: payload.tag_id,
+          cover_image_url: payload.cover_image_url,
+          // img: payload.img,
+          owner: payload.owner,
+          title: payload.title,
+        },
+        authHeader()
+      );
+      return response;
+    },
     async updatePost(_, payload) {
       let response = await axios.put(
         `${baseUrl()}/api/member/updatePost`,

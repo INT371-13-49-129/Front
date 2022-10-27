@@ -310,7 +310,7 @@ export default {
             this.editAccount.cover_image_url = res.data.file_id;
           }
           await this.$store.dispatch("updateAccountProfile", this.editAccount);
-          await this.store.dispatch("getAccount");
+          await this.$store.dispatch("getAccount");
           this.$vs.notification({
             progress: "auto",
             flat: true,
