@@ -34,7 +34,7 @@
         </div>
       </div>
     </div>
-    <div class="fixed bottom-6 right-7 xl:hidden block z-10">
+    <div class="fixed bottom-16 right-4 xl:hidden block z-10">
       <vs-avatar
         circle
         primary

@@ -71,6 +71,24 @@ const routes = [
       auth: true,
     },
   },
+  {
+    path: "/post/:post_id",
+    name: "PostView",
+    component: () => import("../views/PostView.vue"),
+  },
+  {
+    path: "/profile/:account_id",
+    name: "ProfileView",
+    component: () => import("../views/ProfileView.vue"),
+  },
+  {
+    path: "/mooddiary",
+    name: "MoodDiary",
+    component: () => import("../views/MoodDiary.vue"),
+    meta: {
+      auth: true,
+    },
+  },
 ];
 
 const router = new VueRouter({
@@ -81,7 +99,6 @@ const router = new VueRouter({
 
 router.beforeEach(async (to, from, next) => {
   await store.dispatch("getAccount");
-  console.log(store.getters.isLogin);
   if (to.meta.noAuth && store.getters.isLogin) {
     next({ path: "/" });
   }
@@ -90,5 +107,20 @@ router.beforeEach(async (to, from, next) => {
   }
   next();
 });
+
+const originalPush = router.push;
+router.push = function push(location, onResolve, onReject) {
+  if (onResolve || onReject) {
+    return originalPush.call(this, location, onResolve, onReject);
+  }
+
+  return originalPush.call(this, location).catch((err) => {
+    if (VueRouter.isNavigationFailure(err)) {
+      return err;
+    }
+
+    return Promise.reject(err);
+  });
+};
 
 export default router;

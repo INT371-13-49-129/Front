@@ -5,7 +5,7 @@
       class="pt-16 w-full xl:h-full h-screen flex xl:flex-row flex-col xl:justify-center gap-2"
     >
       <div class="xl:w-30/100 w-full xl:px-4 px-3 xl:overflow-y-auto">
-        <DataProfile :account_id="account.account_id"></DataProfile>
+        <DataProfile :account_id="parseInt(account_id)"></DataProfile>
         <div
           class="filter flex drop-shadow-all w-full my-3 bg-white rounded-2xl justify-between items-center px-4"
         >
@@ -20,39 +20,14 @@
         ref="post"
         class="xl:w-2/4 w-full xl:h-full px-3 xl:overflow-y-auto xl:pb-0 pb-12"
       >
-        <div class="flex justify-between xl:pt-4">
-          <div><b>Mood :</b> Today, 9 September 2022</div>
-          <div class="flex items-center">
-            All
-            <i class="bx bx-chevron-right"></i>
-          </div>
-        </div>
-        <div class="flex mt-3 pb-1 xl:gap-7 gap-4 overflow-x-auto w-full">
-          <div
-            class="px-1 w-20 flex-shrink-0 rounded-2xl border-primary border-2 border-opacity-70 filter drop-shadow-all bg-white"
-            v-for="i in 7"
-            :key="i"
-          >
-            <div class="font-medium mt-1">{{ i }}</div>
-            <div>Sat</div>
-            <div class="float-right">
-              <i class="bx bx-smile text-xl text-green-400 mb-1"></i>
-            </div>
-          </div>
-        </div>
         <div class="mt-4">
           <div v-observe-visibility="visibilityChanged">
             <b>Post</b>
           </div>
-          <CreatePost
-            class="-mb-2 xl:mb-0"
-            @modalNewPost="modalNewPost"
-          ></CreatePost>
-          <div class="mb-2" v-for="post in allMyPost" :key="post.post_id">
+          <div class="mb-2" v-for="post in allPost" :key="post.post_id">
             <Post
               :post="post"
               @referPost="referPost"
-              @editPost="editPost"
               @getAllPost="getAllPost"
             ></Post>
           </div>
@@ -62,8 +37,8 @@
             spinner="spiral"
           >
             <div slot="no-more"></div>
-            <div slot="no-results"></div>
-          </infinite-loading>
+            <div slot="no-results"></div
+          ></infinite-loading>
         </div>
       </div>
       <div
@@ -87,12 +62,12 @@ import InfiniteLoading from "vue-infinite-loading";
 import Post from "@/components/Post.vue";
 import NavbarSidebar from "@/components/NavbarSidebar.vue";
 import ManagePost from "@/components/ManagePost.vue";
-import CreatePost from "@/components/CreatePost.vue";
 import DataProfile from "@/components/DataProfile.vue";
 
 export default {
   data() {
     return {
+      account_id: this.$route.params.account_id,
       page: 1,
       infiniteId: +new Date(),
       isVisible: false,
@@ -102,7 +77,6 @@ export default {
     Post,
     NavbarSidebar,
     ManagePost,
-    CreatePost,
     DataProfile,
     InfiniteLoading,
   },
@@ -110,20 +84,28 @@ export default {
     referPost(post) {
       this.$refs.managePost.referPost(post);
     },
-    modalNewPost() {
-      this.$refs.managePost.modalNewPost();
-    },
-    editPost(post) {
-      this.$refs.managePost.editPost(post);
-    },
     async getAllPost() {
-      this.page = 1;
-      await this.$store.dispatch("getAllMyPostPagination", { page: this.page });
-      this.infiniteId += 1;
+      if (this.isLogin && this.account.account_id == this.account_id) {
+        this.$router.push("/profile");
+        return null;
+      }
+      try {
+        this.page = 1;
+        await this.$store.dispatch("getAllPostAccountPagination", {
+          account_id: this.account_id,
+          page: this.page,
+        });
+        this.infiniteId += 1;
+      } catch (error) {
+        console.log(error);
+        this.$router.push("/");
+        return null;
+      }
     },
     async LodeMore($state) {
       this.page += 1;
-      const res = await this.$store.dispatch("getAllMyPostPagination", {
+      const res = await this.$store.dispatch("getAllPostAccountPagination", {
+        account_id: this.account_id,
         page: this.page,
       });
       if (res.data.posts.rows.length > 0) {
@@ -142,9 +124,7 @@ export default {
   async mounted() {
     const loading = this.$vs.loading();
     this.$store.commit("setCurrentPage", this.$route.name);
-    await this.$store.dispatch("getAllMyPostPagination", {
-      page: this.page,
-    });
+    await this.getAllPost();
     await this.$store.dispatch("getAllTag");
     loading.close();
   },
@@ -152,7 +132,7 @@ export default {
     ...mapGetters({
       isLogin: "isLogin",
       account: "getAccount",
-      allMyPost: "getAllMyPost",
+      allPost: "getAllPost",
       allTag: "getAllTag",
     }),
   },

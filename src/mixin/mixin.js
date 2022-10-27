@@ -50,7 +50,12 @@ export default {
       return d.toLocaleDateString();
     },
     getFile(file_id) {
+      // console.log(`${baseUrl()}/api/member/getFile/${file_id}`);
       return `${baseUrl()}/api/member/getFile/${file_id}`;
+      // return "https://cataas.com/cat";
+    },
+    getName(account) {
+      return account.role == "Psychologist" ? account.name : account.username;
     },
   },
 };

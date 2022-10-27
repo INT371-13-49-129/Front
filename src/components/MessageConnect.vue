@@ -27,7 +27,7 @@
             @click="toMessage(ac.account_id)"
             class="truncate w-28 text-sm text-center cursor-pointer"
           >
-            {{ ac.username }}
+            {{ getName(ac) }}
           </div>
         </div>
       </div>
@@ -52,7 +52,7 @@
           </vs-avatar>
           <div class="flex-grow truncate ml-4">
             <div class="font-semibold">
-              {{ getOtherAccount(messageConnect).username }}
+              {{ getName(getOtherAccount(messageConnect)) }}
             </div>
             <div
               class="w-full flex text-sm"
@@ -64,7 +64,10 @@
               "
             >
               <div class="mr-2 flex-shrink truncate">
-                {{ getLastMessages(messageConnect).text }}
+                <span v-if="getLastMessages(messageConnect).image_url"
+                  >ได้ส่งรูปภาพ</span
+                >
+                <span v-else>{{ getLastMessages(messageConnect).text }}</span>
               </div>
               <div>
                 · {{ getTime(getLastMessages(messageConnect).createdAt) }}

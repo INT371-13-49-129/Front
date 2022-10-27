@@ -1,6 +1,7 @@
 <template>
   <div
     class="filter drop-shadow-all w-full mt-3 bg-white rounded-2xl pb-6 overflow-y-auto"
+    v-if="account"
   >
     <div class="h-1/6 w-full py-4 bg-blue-200 flex items-center">
       <vs-avatar size="60" circle class="ml-4">
@@ -14,7 +15,7 @@
     </div>
     <div class="px-4">
       <div class="flex justify-between items-center mt-1">
-        <div class="text-lg font-semibold">{{ account.username }}</div>
+        <div class="text-lg font-semibold">{{ getName(account) }}</div>
         <vs-button
           @click="$router.push('/profile/edit')"
           circle
@@ -89,6 +90,7 @@ export default {
   data() {
     return {
       is_listener: false,
+      account: null,
     };
   },
   props: {
@@ -97,14 +99,24 @@ export default {
     },
   },
   async mounted() {
-    if (this.account) {
-      this.is_listener = this.account.is_listener;
+    if (this.isLogin && this.account_id == this.myAccount.account_id) {
+      this.account = this.myAccount;
+    } else {
+      try {
+        const res = await this.$store.dispatch(
+          "getAccountById",
+          this.account_id
+        );
+        this.account = res.data.account;
+      } catch (error) {
+        console.log(error);
+      }
     }
   },
   computed: {
     ...mapGetters({
       isLogin: "isLogin",
-      account: "getAccount",
+      myAccount: "getAccount",
     }),
   },
 };
