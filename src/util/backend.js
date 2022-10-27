@@ -2,7 +2,7 @@
 const stage = () => {
   const url = window.location.hostname;
   switch (url) {
-    case "jaid.onthewifi.com":
+    case "jaid.serveblog.net":
       return "dev";
     case "localhost":
       return "local";
@@ -17,7 +17,7 @@ export const baseUrl = () => {
     case "uat":
       return "";
     case "dev":
-      return "https://jaid.onthewifi.com/backend";
+      return "https://jaid.serveblog.net/backend";
     case "local":
       return "http://localhost:3000";
     default:
@@ -31,7 +31,7 @@ export const baseUrlSocket = () => {
     case "uat":
       return "";
     case "dev":
-      return "https://jaid.onthewifi.com/";
+      return "https://jaid.serveblog.net/";
     case "local":
       return "http://localhost:3000";
     default:
