@@ -1,102 +1,172 @@
 <template>
   <div>
-    <vs-navbar shadow square center-collapsed v-model="active">
+    <vs-navbar shadow square center-collapsed>
       <template #left>
-        <vs-avatar circle @click="activeSidebar = !activeSidebar" class="my-2">
-          <img
-            v-if="account && account.image_url"
-            :src="getFile(account.image_url)"
-            alt=""
-          />
-          <i v-else class="bx bx-user"></i>
-        </vs-avatar>
-      </template>
-      <img
-        src="../assets/logo.png"
-        width="83.45px"
-        height="28px"
-        @click="$router.push('/')"
-      />
-      <template #right>
-        <img
-          v-if="isLogin"
-          src="../assets/img/chat.svg"
-          width="40px"
-          height="40px"
-          @click="$router.push('/messages')"
-        />
-      </template>
-    </vs-navbar>
-    <vs-sidebar absolute v-model="active" :open.sync="activeSidebar">
-      <template #logo>
-        <div class="flex items-center -ml-2" @click="$router.push('/profile')">
-          <vs-avatar circle>
-            <img
-              v-if="account && account.image_url"
-              :src="getFile(account.image_url)"
-              alt=""
-            />
-            <i v-else class="bx bx-user"></i>
-          </vs-avatar>
-          <div class="ml-4">
-            <div class="font-semibold text-xl break-all">
-              {{ isLogin ? account.username : "Guest" }}
-            </div>
-          </div>
-        </div>
-      </template>
-      <vs-sidebar-item id="Home">
-        <template #icon>
-          <i class="bx bx-home" @click="$router.push('/')"></i>
-        </template>
-        <div class="text-lg" @click="$router.push('/')">Home</div>
-      </vs-sidebar-item>
-      <vs-sidebar-item id="Messages" v-if="isLogin">
-        <template #icon>
-          <i
-            class="bx bx-message-rounded"
-            @click="$router.push('/messages')"
-          ></i>
-        </template>
-        <div class="text-lg" @click="$router.push('/messages')">Messages</div>
-      </vs-sidebar-item>
-      <vs-sidebar-item v-if="!isLogin">
-        <template #icon>
-          <i
-            @click="$router.push('/login')"
-            class="bx bx-log-in text-gray-700"
-          ></i>
-        </template>
-        <div @click="$router.push('/login')" class="text-lg text-gray-700">
-          Login
-        </div>
-      </vs-sidebar-item>
-      <vs-sidebar-item v-if="!isLogin">
-        <template #icon>
-          <i
-            @click="$router.push('/signup')"
-            class="bx bx-user text-gray-700"
-          ></i>
-        </template>
-        <div @click="$router.push('/signup')" class="text-lg text-gray-700">
-          Sign up
-        </div>
-      </vs-sidebar-item>
-      <vs-sidebar-item v-if="isLogin">
-        <template #icon>
-          <i @click="logout()" class="bx bx-log-out text-red-500"></i>
-        </template>
-        <div @click="logout()" class="text-lg text-red-500">Logout</div>
-      </vs-sidebar-item>
-      <template #footer>
         <img
           src="../assets/logo.png"
           width="83.45px"
           height="28px"
-          class="ml-16"
+          class="cursor-pointer"
+          @click="$router.push({ name: 'Home' })"
         />
       </template>
-    </vs-sidebar>
+      <template #right>
+        <div v-if="isLogin" class="xl:flex hidden">
+          <div
+            class="rounded-full mx-2 w-10 h-10 flex justify-center items-center cursor-pointer"
+            :class="
+              active == 'Home'
+                ? 'bg-primary bg-opacity-10 text-primary'
+                : 'hover:bg-primary hover:bg-opacity-10 hover:text-primary'
+            "
+            @click="active == 'Home' ? '' : $router.push({ name: 'Home' })"
+          >
+            <i class="bx bx-home text-3xl"></i>
+          </div>
+          <div
+            class="rounded-full mx-2 w-10 h-10 flex justify-center items-center"
+          >
+            <i class="bx bx-donate-heart text-3xl"></i>
+          </div>
+          <div
+            class="rounded-full mx-2 w-10 h-10 flex justify-center items-center cursor-pointer"
+            :class="
+              active == 'MoodDiary'
+                ? 'bg-primary bg-opacity-10 text-primary'
+                : 'hover:bg-primary hover:bg-opacity-10 hover:text-primary'
+            "
+            @click="$router.push({ name: 'MoodDiary' })"
+          >
+            <i class="bx bx-book-open text-3xl"></i>
+          </div>
+          <div
+            class="rounded-full mx-2 w-10 h-10 flex justify-center items-center cursor-pointer"
+            :class="
+              active == 'Messages'
+                ? 'bg-primary bg-opacity-10 text-primary'
+                : 'hover:bg-primary hover:bg-opacity-10 hover:text-primary'
+            "
+            @click="$router.push({ name: 'Messages' })"
+          >
+            <i class="bx bx-message-rounded text-3xl"></i>
+          </div>
+          <div
+            class="rounded-full mx-2 w-10 h-10 flex justify-center items-center"
+          >
+            <i class="bx bx-bell text-3xl"></i>
+          </div>
+        </div>
+        <vs-avatar circle class="my-2 ml-2">
+          <img
+            v-if="account && account.image_url"
+            :src="getFile(account.image_url)"
+            alt=""
+            @click="modalAccountShow = true"
+          />
+          <i v-else @click="modalAccountShow = true" class="bx bx-user"></i>
+        </vs-avatar>
+      </template>
+    </vs-navbar>
+    <div
+      class="fixed bottom-0 xl:hidden block z-10 bg-white w-full filter drop-shadow-all"
+    >
+      <div v-if="isLogin" class="flex justify-around my-2">
+        <div
+          class="rounded-full mx-2 w-10 h-10 flex justify-center items-center cursor-pointer"
+          :class="
+            active == 'Home'
+              ? 'bg-primary bg-opacity-10 text-primary'
+              : 'hover:bg-primary hover:bg-opacity-10 hover:text-primary'
+          "
+          @click="active == 'Home' ? '' : $router.push({ name: 'Home' })"
+        >
+          <i class="bx bx-home text-3xl"></i>
+        </div>
+        <div
+          class="rounded-full mx-2 w-10 h-10 flex justify-center items-center"
+        >
+          <i class="bx bx-donate-heart text-3xl"></i>
+        </div>
+        <div
+          class="rounded-full mx-2 w-10 h-10 flex justify-center items-center cursor-pointer"
+          :class="
+            active == 'MoodDiary'
+              ? 'bg-primary bg-opacity-10 text-primary'
+              : 'hover:bg-primary hover:bg-opacity-10 hover:text-primary'
+          "
+          @click="$router.push({ name: 'MoodDiary' })"
+        >
+          <i class="bx bx-book-open text-3xl"></i>
+        </div>
+        <div
+          class="rounded-full mx-2 w-10 h-10 flex justify-center items-center cursor-pointer"
+          :class="
+            active == 'Messages'
+              ? 'bg-primary bg-opacity-10 text-primary'
+              : 'hover:bg-primary hover:bg-opacity-10 hover:text-primary'
+          "
+          @click="$router.push({ name: 'Messages' })"
+        >
+          <i class="bx bx-message-rounded text-3xl"></i>
+        </div>
+        <div
+          class="rounded-full mx-2 w-10 h-10 flex justify-center items-center"
+        >
+          <i class="bx bx-bell text-3xl"></i>
+        </div>
+      </div>
+    </div>
+    <vs-dialog v-model="modalAccountShow">
+      <div v-if="isLogin">
+        <div
+          class="flex items-center hover:bg-blue-100 rounded-xl cursor-pointer"
+          @click="$router.push({ name: 'MyProfile' })"
+        >
+          <vs-avatar circle class="my-2 ml-2">
+            <img :src="getFile(account.image_url)" alt="" />
+          </vs-avatar>
+          <div class="ml-3 font-semibold text-lg">
+            {{ getName(account) }}
+          </div>
+        </div>
+        <div
+          class="mt-2 ml-2 flex items-center border-t-2 border-b-2 py-2 hover:bg-blue-50 cursor-pointer"
+          @click="$router.push({ name: 'EditProfile' })"
+        >
+          <i class="bx bx-cog text-3xl"></i>
+          <div class="ml-3 font-semibold text-lg text-gray-700">Setting</div>
+        </div>
+        <div
+          class="ml-2 flex items-center border-b-2 py-2 hover:bg-blue-50 cursor-pointer"
+          @click="logout()"
+        >
+          <i class="bx bx-log-out text-3xl"></i>
+          <div class="ml-3 font-semibold text-lg text-gray-700">Log out</div>
+        </div>
+      </div>
+      <div v-else>
+        <div class="flex items-center">
+          <vs-avatar circle class="my-2 ml-2">
+            <i class="bx bx-user"></i>
+          </vs-avatar>
+          <div class="ml-3 font-semibold text-lg">Guest</div>
+        </div>
+        <div
+          class="mt-2 ml-2 flex items-center border-t-2 border-b-2 py-2 hover:bg-blue-50 cursor-pointer"
+          @click="$router.push({ name: 'Login' })"
+        >
+          <i class="bx bx-log-in text-3xl"></i>
+          <div class="ml-3 font-semibold text-lg text-gray-700">Log in</div>
+        </div>
+        <div
+          class="ml-2 flex items-center border-b-2 py-2 hover:bg-blue-50 cursor-pointer"
+          @click="$router.push({ name: 'SignUp' })"
+        >
+          <i class="bx bx-user text-3xl"></i>
+          <div class="ml-3 font-semibold text-lg text-gray-700">Register</div>
+        </div>
+      </div>
+    </vs-dialog>
   </div>
 </template>
 <script>
@@ -107,8 +177,7 @@ export default {
   mixins: [mixin],
   data() {
     return {
-      active: this.$route.name,
-      activeSidebar: false,
+      modalAccountShow: false,
     };
   },
   methods: {
@@ -122,12 +191,20 @@ export default {
       isLogin: "isLogin",
       account: "getAccount",
     }),
+    active() {
+      if (this.$route.name == "Home") {
+        return "Home";
+      } else if (
+        this.$route.name == "Message" ||
+        this.$route.name == "Messages"
+      ) {
+        return "Messages";
+      } else if (this.$route.name == "MoodDiary") {
+        return "MoodDiary";
+      } else {
+        return "";
+      }
+    },
   },
 };
 </script>
-<style scoped>
-.vs-sidebar-content .vs-sidebar__logo img {
-  max-width: 120px;
-  max-height: 100% !important;
-}
-</style>

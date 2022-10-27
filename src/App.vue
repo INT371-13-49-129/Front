@@ -5,6 +5,11 @@
 </template>
 
 <style>
+.vs-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
 .scroll::-webkit-scrollbar {
   display: none;
 }
@@ -17,5 +22,9 @@
 
 ::-webkit-scrollbar-thumb {
   background: #8181818b;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 </style>

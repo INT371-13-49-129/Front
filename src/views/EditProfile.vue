@@ -1,7 +1,7 @@
 <template>
   <div class="w-full h-full overflow-y-auto">
     <NavbarSidebar></NavbarSidebar>
-    <div class="pt-16 w-full h-full flex justify-center">
+    <div class="pt-16 xl:pb-0 pb-12 w-full h-full flex justify-center">
       <div class="xl:w-4/6 w-full h-full px-3">
         <div class="flex items-center py-2">
           <i
@@ -13,7 +13,20 @@
             <div class="px-2">Save</div></vs-button
           >
         </div>
-        <div class="h-28 flex items-center bg-blue-100">
+        <div
+          class="h-28 flex items-center bg-blue-100"
+          :style="
+            editAccount.cover_image_url || upLoadFile2
+              ? {
+                  'background-image': upLoadFile2
+                    ? `url(${img2})`
+                    : `url(${getFile(editAccount.cover_image_url)})`,
+                  'background-repeat': 'no-repeat',
+                  'background-size': 'cover',
+                }
+              : ''
+          "
+        >
           <vs-avatar size="70" circle class="ml-6">
             <img
               v-if="editAccount.image_url || upLoadFile"
@@ -26,9 +39,7 @@
         <div class="rounded-lg p-3 border-2 mt-4 mb">
           <div class="text-lg font-semibold">ข้อมูลพื้นฐาน</div>
           <div>ผู้ใช้บริการรายอื่นๆ อาจเห็นข้อมูลบางอย่างของคุณ</div>
-          <div
-            class="flex xl:flex-row flex-col xl:items-center py-4 border-b-2"
-          >
+          <div class="flex xl:flex-row flex-col xl:items-center py-4">
             <div class="w-32 mb-1 xl:mb-0">รูปโปรไฟล์</div>
             <div class="flex flex-grow">
               <vs-avatar circle class="flex-shrink-0 mr-4">
@@ -62,27 +73,48 @@
             </div>
           </div>
           <div
-            v-if="false"
             class="flex xl:flex-row flex-col xl:items-center py-4 border-t-2 border-b-2"
           >
             <div class="w-32 mb-1 xl:mb-0">รูปปก</div>
-            <div class="flex flex-grow">
-              <vs-avatar class="flex-shrink-0 mr-4">
-                <img
-                  v-if="editAccount.cover_image_url"
-                  :src="editAccount.cover_image_url"
-                  alt=""
-                />
-                <i v-else class="bx bx-user"></i>
-              </vs-avatar>
+            <div class="flex flex-grow items-center">
+              <div class="w-20 mr-2">
+                <vue-load-image
+                  v-if="editAccount.cover_image_url || upLoadFile2"
+                >
+                  <img
+                    slot="image"
+                    :src="
+                      upLoadFile2 ? img2 : getFile(editAccount.cover_image_url)
+                    "
+                    alt=""
+                  />
+                  <img
+                    slot="preloader"
+                    src="@/assets/img/preload.svg"
+                    class="animate-pulse object-contain w-full h-full"
+                  />
+                </vue-load-image>
+                <div v-else class="bg-blue-100 w-full h-12"></div>
+              </div>
               <div class="flex-grow">
                 <div class="text-sm">ขนาดไฟล์: สูงสุด 1 MB</div>
                 <div class="text-sm">ไฟล์ที่รองรับ: .JPEG, .PNG</div>
               </div>
               <div class="">
-                <div class="px-2 py-1 border-2 rounded-md text-sm">
+                <label
+                  for="url2"
+                  class="px-2 py-1 border-2 rounded-md text-sm cursor-pointer"
+                >
                   เปลี่ยนรูป
-                </div>
+                </label>
+                <input
+                  class="hidden"
+                  type="file"
+                  id="url2"
+                  ref="myFiles2"
+                  accept=".jpg, .jpeg, .png"
+                  @change="previewFiles2"
+                />
               </div>
             </div>
           </div>
@@ -192,10 +224,8 @@
   </div>
 </template>
 <script>
-import axios from "axios";
 import mixin from "@/mixin/mixin.js";
-import { baseUrl } from "../util/backend.js";
-import { authHeader } from "../store/index.js";
+import VueLoadImage from "vue-load-image";
 import { mapGetters } from "vuex";
 import { statusCode } from "../util/statusCode.js";
 import NavbarSidebar from "@/components/NavbarSidebar.vue";
@@ -222,12 +252,16 @@ export default {
       },
       modalTopicShow: false,
       files: "",
+      files2: "",
       img: "",
-      upLoadFile: "",
+      img2: "",
+      upLoadFile: false,
+      upLoadFile2: false,
     };
   },
   components: {
     NavbarSidebar,
+    VueLoadImage,
   },
   methods: {
     currentDate() {
@@ -268,16 +302,15 @@ export default {
       if (this.validate.username) {
         try {
           if (this.upLoadFile) {
-            let data = new FormData();
-            data.append("img", this.files);
-            const res = await axios.post(
-              `${baseUrl()}/api/member/uploadFile`,
-              data,
-              authHeader()
-            );
+            const res = await this.$store.dispatch("uploadFile", this.files);
             this.editAccount.image_url = res.data.file_id;
           }
+          if (this.upLoadFile2) {
+            const res = await this.$store.dispatch("uploadFile", this.files2);
+            this.editAccount.cover_image_url = res.data.file_id;
+          }
           await this.$store.dispatch("updateAccountProfile", this.editAccount);
+          await this.store.dispatch("getAccount");
           this.$vs.notification({
             progress: "auto",
             flat: true,
@@ -311,6 +344,11 @@ export default {
       this.files = this.$refs.myFiles.files[0];
       this.img = URL.createObjectURL(this.files);
       this.upLoadFile = true;
+    },
+    previewFiles2() {
+      this.files2 = this.$refs.myFiles2.files[0];
+      this.img2 = URL.createObjectURL(this.files2);
+      this.upLoadFile2 = true;
     },
   },
   async mounted() {

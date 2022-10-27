@@ -1,5 +1,8 @@
 <template>
-  <div class="w-full px-3 py-4" :class="hideComent ? '' : 'border-b-2'">
+  <div
+    class="w-full px-3 py-4"
+    :class="hideComent || hideReferPost ? '' : 'border-b-2'"
+  >
     <div class="flex items-center">
       <vs-avatar class="flex-shrink-0" circle>
         <img
@@ -9,10 +12,17 @@
         />
         <i v-else class="bx bx-user"></i>
       </vs-avatar>
-      <div class="ml-3">
+      <div
+        class="ml-3 flex-grow cursor-pointer"
+        @click="$router.push('/post/' + post.post_id)"
+      >
         <div class="font-semibold text-lg">
-          {{ post.account.username }}
-          <span class="font-normal text-sm"
+          <span
+            class="hover:underline"
+            @click.stop="$router.push('/profile/' + post.account.account_id)"
+            >{{ getName(post.account) }}</span
+          >
+          <span class="font-normal text-sm ml-1"
             ><span v-if="post.tags_feeling.length !== 0" class="mr-0.5"
               >รู้สึก</span
             >
@@ -35,10 +45,11 @@
           </span>
         </div>
         <div class="font-light text-sm from-gray-700">
-          {{ timeSince(post.createdAt) }}
+          {{ timeSince(post.createdAt) }} ·
+          {{ post.publish_status == "Publish" ? "สาธารณะ" : "ส่วนตัว" }}
         </div>
       </div>
-      <div v-if="!hideComent" class="h-full flex-grow flex justify-end">
+      <div v-if="!hideComent && !hideReferPost" class="h-full flex justify-end">
         <i
           v-if="isLogin"
           class="bx bx-dots-horizontal-rounded text-xl cursor-pointer"
@@ -50,8 +61,52 @@
       v-html="post.text.replace(/(?:\r\n|\r|\n)/g, '<br />')"
       class="mt-2 break-words"
     ></div>
-    <div v-if="post.refer_post" class="p-3 border-2 rounded-xl my-4">
+    <div
+      class="p-3 border-2 rounded-xl my-4"
+      v-if="!post.refer_post && !hideReferPost && post.refer_post_id"
+    >
+      ไม่สามารถแสดงโพสต์ได้ โพสต์นี้อาจถูกลบไปแล้วหรือถูกจำกัดการเข้าถึง
+    </div>
+    <div
+      v-if="post.refer_post && !hideReferPost"
+      class="p-3 border-2 rounded-xl my-4"
+    >
       <Post :post="post.refer_post" :hideComent="true"></Post>
+    </div>
+    <div
+      v-if="post.img && post.img.length > 0"
+      class="flex flex-wrap w-full mt-2"
+      :class="post.img.length == 2 ? 'xl:h-80 h-60' : 'flex-col xl:h-128 h-80'"
+    >
+      <div
+        v-for="(img, i) in post.img"
+        :key="i"
+        class="p-0.5"
+        :class="
+          post.img.length == 1
+            ? 'h-full w-full'
+            : post.img.length == 2
+            ? 'h-full w-1/2'
+            : post.img.length == 3 && i == 0
+            ? 'h-full w-1/2'
+            : 'h-1/2 w-1/2'
+        "
+      >
+        <vue-load-image class="h-full w-full">
+          <img
+            slot="image"
+            :src="getFile(img)"
+            class="h-full w-full object-cover cursor-pointer"
+            alt=""
+            @click="imgShow(post.img, i)"
+          />
+          <img
+            slot="preloader"
+            src="@/assets/img/preload.svg"
+            class="animate-pulse object-cover w-full h-full"
+          />
+        </vue-load-image>
+      </div>
     </div>
     <div v-if="!hideComent">
       <div
@@ -67,7 +122,12 @@
           "
         ></i>
         <i v-else class="bx bx-heart text-xl mr-1"></i>
-        {{ post.count_emotions == 0 ? "" : post.count_emotions }} กำลังใจ
+        {{ post.count_emotions == 0 ? "" : post.count_emotions }}
+        <span
+          :class="post.count_emotions == 0 ? '' : 'cursor-pointer ml-1'"
+          @click="post.count_emotions == 0 ? '' : (modalEmotions = true)"
+          >กำลังใจ</span
+        >
         <div class="flex-grow"></div>
         <i
           class="bx bx-message-rounded text-xl mr-1 cursor-pointer"
@@ -78,16 +138,26 @@
         <i
           @click="$emit('referPost', post)"
           class="bx bx-paper-plane text-xl mr-1"
-          :class="isLogin ? 'cursor-pointer' : ''"
+          :class="isLogin && !hideReferPost ? 'cursor-pointer' : ''"
         ></i
-        >{{ post.count_posts == 0 ? "" : post.count_posts }} repost
+        >{{ post.count_posts == 0 ? "" : post.count_posts }}
+        <span
+          :class="post.count_posts == 0 ? '' : 'cursor-pointer ml-1'"
+          @click="post.count_posts == 0 ? '' : getAllRepost()"
+        >
+          repost</span
+        >
       </div>
       <div
         v-show="showComment"
         v-for="comment in post.comments"
         :key="comment.comment_id"
       >
-        <Comment :comment="comment"></Comment>
+        <Comment
+          :comment="comment"
+          :hideReferPost="hideReferPost"
+          @getAllRepost="$emit('getAllRepost')"
+        ></Comment>
       </div>
 
       <div class="mt-2 flex" v-if="isLogin">
@@ -241,10 +311,92 @@
         ยกเลิก
       </vs-button>
     </vs-dialog>
+    <vs-dialog v-model="modalRepost">
+      <template #header>
+        <div class="mt-2 text-lg font-semibold">รีโพสต์</div>
+      </template>
+      <div class="-mt-2">
+        <div
+          class="border-2 rounded-xl mb-3"
+          v-for="repost in allRepost"
+          :key="repost.post_id"
+        >
+          <Post
+            :post="repost"
+            :hideReferPost="true"
+            @getAllRepost="getAllRepost"
+          ></Post>
+        </div>
+      </div>
+    </vs-dialog>
+    <vs-dialog v-model="modalEmotions">
+      <template #header>
+        <div class="mt-2 text-lg font-semibold">ส่งกำลังใจ</div>
+      </template>
+      <div class="border-t-2 -mt-2">
+        <div
+          v-for="emo in post.emotions"
+          :key="emo.emotion_id"
+          class="mt-3 flex items-center"
+        >
+          <vs-avatar circle class="flex-shrink-0 mr-3">
+            <img
+              v-if="emo.account.image_url"
+              :src="getFile(emo.account.image_url)"
+              alt=""
+            />
+            <i v-else class="bx bx-user"></i>
+          </vs-avatar>
+          <div class="font-semibold flex-grow">{{ getName(emo.account) }}</div>
+          <i class="bx bxs-heart text-xl mr-1 text-red-500"></i>
+        </div>
+      </div>
+    </vs-dialog>
+    <vs-dialog v-model="modalImg">
+      <div
+        v-for="(img, i) in img_show"
+        :key="i"
+        v-show="i == img_show_index"
+        class="flex items-center"
+      >
+        <i
+          v-if="img_show.length > 1"
+          class="bx bx-chevron-left text-3xl -ml-3 cursor-pointer"
+          @click="
+            img_show_index == 0
+              ? (img_show_index = img_show.length - 1)
+              : (img_show_index -= 1)
+          "
+        ></i>
+        <vue-load-image class="xl:max-h-144 w-screen xl:w-auto px-1 pt-3">
+          <img
+            slot="image"
+            :src="getFile(img)"
+            class="xl:max-h-144 h-full w-full object-contain"
+            alt=""
+          />
+          <img
+            slot="preloader"
+            src="@/assets/img/preload.svg"
+            class="animate-pulse object-contain w-full xl:h-128"
+          />
+        </vue-load-image>
+        <i
+          v-if="img_show.length > 1"
+          class="bx bx-chevron-right text-3xl -mr-3 cursor-pointer"
+          @click="
+            img_show_index == img_show.length - 1
+              ? (img_show_index = 0)
+              : (img_show_index += 1)
+          "
+        ></i>
+      </div>
+    </vs-dialog>
   </div>
 </template>
 <script>
 import Comment from "@/components/Comment.vue";
+import VueLoadImage from "vue-load-image";
 import { mapGetters } from "vuex";
 import mixin from "@/mixin/mixin.js";
 
@@ -258,10 +410,17 @@ export default {
       modalActive: false,
       modalLogEdit: false,
       modalDelete: false,
+      modalImg: false,
+      modalEmotions: false,
+      modalRepost: false,
+      img_show: [],
+      img_show_index: 0,
+      allRepost: [],
     };
   },
   components: {
     Comment,
+    VueLoadImage,
   },
   props: {
     post: {
@@ -286,6 +445,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    hideReferPost: {
+      type: Boolean,
+      default: false,
+    },
   },
   methods: {
     async updateEmotion(is_emotion) {
@@ -294,9 +457,13 @@ export default {
         comment_id: null,
         is_emotion,
       });
-      await this.$store.dispatch("getPost", {
-        post_id: this.post.post_id,
-      });
+      if (this.hideReferPost) {
+        this.$emit("getAllRepost");
+      } else {
+        await this.$store.dispatch("getPost", {
+          post_id: this.post.post_id,
+        });
+      }
     },
     async createComment() {
       await this.$store.dispatch("createComment", {
@@ -304,9 +471,13 @@ export default {
         post_id: this.post.post_id,
         reply_comment_id: null,
       });
-      await this.$store.dispatch("getPost", {
-        post_id: this.post.post_id,
-      });
+      if (this.hideReferPost) {
+        this.$emit("getAllRepost");
+      } else {
+        await this.$store.dispatch("getPost", {
+          post_id: this.post.post_id,
+        });
+      }
       this.showComment = true;
       this.newComment = "";
     },
@@ -324,6 +495,18 @@ export default {
       } catch (error) {
         console.log(error);
       }
+    },
+    imgShow(img, i) {
+      this.modalImg = true;
+      this.img_show = img;
+      this.img_show_index = i;
+    },
+    async getAllRepost() {
+      this.allRepost = await this.$store.dispatch(
+        "getAllRepost",
+        this.post.post_id
+      );
+      this.modalRepost = true;
     },
   },
   computed: {

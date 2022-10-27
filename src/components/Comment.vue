@@ -10,7 +10,7 @@
     </vs-avatar>
     <div class="ml-2 flex-grow">
       <div class="flex">
-        <div class="font-semibold">{{ comment.account.username }}</div>
+        <div class="font-semibold">{{ getName(comment.account) }}</div>
         <div v-if="isLogin" class="h-full flex-grow flex justify-end">
           <i
             @click="(selectComment = comment), (modalActive = true)"
@@ -71,7 +71,7 @@
         </vs-avatar>
         <div class="ml-2 flex-grow">
           <div class="flex">
-            <div class="font-semibold">{{ c.account.username }}</div>
+            <div class="font-semibold">{{ getName(c.account) }}</div>
             <div v-if="isLogin" class="h-full flex-grow flex justify-end">
               <i
                 @click="(selectComment = c), (modalActive = true)"
@@ -285,6 +285,10 @@ export default {
         };
       },
     },
+    hideReferPost: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -307,9 +311,13 @@ export default {
         comment_id,
         is_emotion,
       });
-      await this.$store.dispatch("getPost", {
-        post_id: this.comment.post_id,
-      });
+      if (this.hideReferPost) {
+        this.$emit("getAllRepost");
+      } else {
+        await this.$store.dispatch("getPost", {
+          post_id: this.comment.post_id,
+        });
+      }
     },
     async createComment() {
       await this.$store.dispatch("createComment", {
@@ -317,9 +325,13 @@ export default {
         post_id: this.comment.post_id,
         reply_comment_id: this.comment.comment_id,
       });
-      await this.$store.dispatch("getPost", {
-        post_id: this.comment.post_id,
-      });
+      if (this.hideReferPost) {
+        this.$emit("getAllRepost");
+      } else {
+        await this.$store.dispatch("getPost", {
+          post_id: this.comment.post_id,
+        });
+      }
       this.showComment = true;
       this.newComment = "";
     },
@@ -328,9 +340,13 @@ export default {
         text: this.editComment,
         comment_id: this.selectComment.comment_id,
       });
-      await this.$store.dispatch("getPost", {
-        post_id: this.comment.post_id,
-      });
+      if (this.hideReferPost) {
+        this.$emit("getAllRepost");
+      } else {
+        await this.$store.dispatch("getPost", {
+          post_id: this.comment.post_id,
+        });
+      }
       this.modalActive = false;
       this.selectComment = {
         comment_id: null,
@@ -351,9 +367,13 @@ export default {
           position: "top-right",
           title: "ลบ Comment สำเร็จ",
         });
-        await this.$store.dispatch("getPost", {
-          post_id: this.comment.post_id,
-        });
+        if (this.hideReferPost) {
+          this.$emit("getAllRepost");
+        } else {
+          await this.$store.dispatch("getPost", {
+            post_id: this.comment.post_id,
+          });
+        }
         this.modalActive = false;
         this.selectComment = {
           comment_id: null,

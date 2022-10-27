@@ -4,12 +4,14 @@ import router from "./router";
 import store from "./store";
 import "./assets/tailwind.css";
 import Vuesax from "vuesax";
+import VueObserveVisibility from "vue-observe-visibility";
 import "boxicons/css/boxicons.min.css";
 import "vuesax/dist/vuesax.css";
 import { io } from "socket.io-client";
 import { baseUrlSocket } from "./util/backend.js";
 
 Vue.config.productionTip = false;
+Vue.use(VueObserveVisibility);
 Vue.use(Vuesax, {
   colors: {
     primary: "#5CB5E8",

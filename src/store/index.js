@@ -28,6 +28,8 @@ export default new Vuex.Store({
     allAccount: [],
     messageConnect: {},
     currentPage: "",
+    postView: null,
+    allMood: [],
   },
   getters: {
     getSendMail: (state) => state.sendMail,
@@ -41,6 +43,8 @@ export default new Vuex.Store({
     getAllAccount: (state) => state.allAccount,
     getMessageConnect: (state) => state.messageConnect,
     getCurrentPage: (state) => state.currentPage,
+    getPostView: (state) => state.postView,
+    getAllMood: (state) => state.allMood,
   },
   mutations: {
     setAccount(state, payload) {
@@ -78,6 +82,12 @@ export default new Vuex.Store({
     },
     setCurrentPage(state, payload) {
       state.currentPage = payload;
+    },
+    setPostView(state, payload) {
+      state.postView = payload;
+    },
+    setAllMood(state, payload) {
+      state.allMood = payload;
     },
   },
   actions: {
@@ -142,6 +152,13 @@ export default new Vuex.Store({
         commit("setIsLogin", false);
       }
     },
+    async getAccountById(_, payload) {
+      let response = await axios.get(
+        `${baseUrl()}/api/member/account/${payload}`,
+        authHeader()
+      );
+      return response;
+    },
     async logout({ commit }) {
       let response = await axios.delete(
         `${baseUrl()}/api/member/logoutMember`,
@@ -186,19 +203,26 @@ export default new Vuex.Store({
               }
             : null,
         };
-        let set = "setAllPost";
-        let all = "allPost";
-        if (state.currentPage == "Home") {
-          set = "setAllPost";
-          all = "allPost";
-        } else if (state.currentPage == "MyProfile") {
-          set = "setAllMyPost";
-          all = "allMyPost";
+        if (state.currentPage == "PostView") {
+          commit("setPostView", post);
+        } else {
+          let set = "setAllPost";
+          let all = "allPost";
+          if (
+            state.currentPage == "Home" ||
+            state.currentPage == "ProfileView"
+          ) {
+            set = "setAllPost";
+            all = "allPost";
+          } else if (state.currentPage == "MyProfile") {
+            set = "setAllMyPost";
+            all = "allMyPost";
+          }
+          commit(
+            set,
+            state[all].map((p) => (p.post_id == post.post_id ? post : p))
+          );
         }
-        commit(
-          set,
-          state[all].map((p) => (p.post_id == post.post_id ? post : p))
-        );
       }
       return response;
     },
@@ -246,6 +270,102 @@ export default new Vuex.Store({
       }
       return response;
     },
+    async getAllPostPagination({ commit, state }, payload) {
+      let { limit = 5, page = 1 } = payload;
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getAllPostPage?page=${page}&limit=${limit}`,
+        authHeader()
+      );
+      if (response.status == 200) {
+        const allPost = response.data.posts.rows
+          .map((post) => {
+            return {
+              count_posts: post.posts.length,
+              count_emotions: post.emotions.length,
+              count_comments: post.comments.reduce(
+                (p, v) => p + v.comments.length + 1,
+                0
+              ),
+              tags_feeling: post.post_tags.filter(
+                (t) => t.tag.tag_type === "Feeling"
+              ),
+              tags_category: post.post_tags.filter(
+                (t) => t.tag.tag_type === "Category"
+              ),
+              ...post,
+              refer_post: post.refer_post
+                ? {
+                    tags_feeling: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Feeling"
+                    ),
+                    tags_category: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Category"
+                    ),
+                    ...post.refer_post,
+                  }
+                : null,
+            };
+          })
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+
+        commit(
+          "setAllPost",
+          page == 1 ? allPost : state.allPost.concat(allPost)
+        );
+      }
+      return response;
+    },
+    async getAllPostAccountPagination({ commit, state }, payload) {
+      let { limit = 5, page = 1, account_id } = payload;
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getAllPostAccountPage/${account_id}?page=${page}&limit=${limit}`,
+        authHeader()
+      );
+      if (response.status == 200) {
+        const allPost = response.data.posts.rows
+          .map((post) => {
+            return {
+              count_posts: post.posts.length,
+              count_emotions: post.emotions.length,
+              count_comments: post.comments.reduce(
+                (p, v) => p + v.comments.length + 1,
+                0
+              ),
+              tags_feeling: post.post_tags.filter(
+                (t) => t.tag.tag_type === "Feeling"
+              ),
+              tags_category: post.post_tags.filter(
+                (t) => t.tag.tag_type === "Category"
+              ),
+              ...post,
+              refer_post: post.refer_post
+                ? {
+                    tags_feeling: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Feeling"
+                    ),
+                    tags_category: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Category"
+                    ),
+                    ...post.refer_post,
+                  }
+                : null,
+            };
+          })
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+
+        commit(
+          "setAllPost",
+          page == 1 ? allPost : state.allPost.concat(allPost)
+        );
+      }
+      return response;
+    },
     async getAllMyPost({ commit, dispatch }) {
       let response = await axios.get(
         `${baseUrl()}/api/member/getAllMyPost`,
@@ -287,6 +407,98 @@ export default new Vuex.Store({
           );
         dispatch("getAccount");
         commit("setAllMyPost", allMyPost);
+      }
+      return response;
+    },
+    async getAllMyPostPagination({ commit, dispatch, state }, payload) {
+      let { limit = 5, page = 1 } = payload;
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getAllMyPostPage?page=${page}&limit=${limit}`,
+        authHeader()
+      );
+      if (response.status == 200) {
+        const allMyPost = response.data.posts.rows
+          .map((post) => {
+            return {
+              count_posts: post.posts.length,
+              count_emotions: post.emotions.length,
+              count_comments: post.comments.reduce(
+                (p, v) => p + v.comments.length + 1,
+                0
+              ),
+              tags_feeling: post.post_tags.filter(
+                (t) => t.tag.tag_type === "Feeling"
+              ),
+              tags_category: post.post_tags.filter(
+                (t) => t.tag.tag_type === "Category"
+              ),
+              ...post,
+              refer_post: post.refer_post
+                ? {
+                    tags_feeling: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Feeling"
+                    ),
+                    tags_category: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Category"
+                    ),
+                    ...post.refer_post,
+                  }
+                : null,
+            };
+          })
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        dispatch("getAccount");
+        commit(
+          "setAllMyPost",
+          page == 1 ? allMyPost : state.allMyPost.concat(allMyPost)
+        );
+      }
+      return response;
+    },
+    async getAllRepost(_, payload) {
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getAllRepost/${payload}`,
+        authHeader()
+      );
+      if (response.status == 200) {
+        const allPost = response.data.posts
+          .map((post) => {
+            return {
+              count_posts: post.posts.length,
+              count_emotions: post.emotions.length,
+              count_comments: post.comments.reduce(
+                (p, v) => p + v.comments.length + 1,
+                0
+              ),
+              tags_feeling: post.post_tags.filter(
+                (t) => t.tag.tag_type === "Feeling"
+              ),
+              tags_category: post.post_tags.filter(
+                (t) => t.tag.tag_type === "Category"
+              ),
+              ...post,
+              refer_post: post.refer_post
+                ? {
+                    tags_feeling: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Feeling"
+                    ),
+                    tags_category: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Category"
+                    ),
+                    ...post.refer_post,
+                  }
+                : null,
+            };
+          })
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+
+        return allPost;
       }
       return response;
     },
@@ -337,6 +549,8 @@ export default new Vuex.Store({
           text: payload.text,
           post_tags: payload.post_tags,
           refer_post_id: payload.refer_post_id,
+          img: payload.img,
+          publish_status: payload.publish_status,
         },
         authHeader()
       );
@@ -349,6 +563,8 @@ export default new Vuex.Store({
           text: payload.text,
           post_tags: payload.post_tags,
           post_id: payload.post_id,
+          img: payload.img,
+          publish_status: payload.publish_status,
         },
         authHeader()
       );
@@ -413,6 +629,20 @@ export default new Vuex.Store({
       commit("setMessageConnect", response.data.messageConnect);
       return response;
     },
+    async getMessageConnectPagination({ commit, state }, payload) {
+      let { account_id, limit = 20, page = 1 } = payload;
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getMessageConnectPage/${account_id}?page=${page}&limit=${limit}`,
+        authHeader()
+      );
+      const messageConnect = response.data.messageConnect.messages;
+      response.data.messageConnect.messages =
+        page == 1
+          ? messageConnect
+          : state.messageConnect.messages.concat(messageConnect);
+      commit("setMessageConnect", response.data.messageConnect);
+      return messageConnect;
+    },
     async readMessage(_, payload) {
       let response = await axios.put(
         `${baseUrl()}/api/member/readMessage`,
@@ -430,6 +660,7 @@ export default new Vuex.Store({
           account_id_2: payload.account_id_2,
           text: payload.text,
           message_connect_id: payload.message_connect_id,
+          image_url: payload.image_url,
         },
         authHeader()
       );
@@ -448,6 +679,101 @@ export default new Vuex.Store({
           is_listener: payload.is_listener,
           account_topics: payload.account_topics,
         },
+        authHeader()
+      );
+      return response;
+    },
+    async getAllMood({ commit }) {
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getAllMood`,
+        authHeader()
+      );
+      commit("setAllMood", response.data.moods);
+      return response;
+    },
+    async getMoodDiaryDate(_, payload) {
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getMoodDiaryDate/${payload}`,
+        authHeader()
+      );
+      return response;
+    },
+    async getMoodDiaryMonth(_, payload) {
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getMoodDiaryMonth/${payload}`,
+        authHeader()
+      );
+      return response;
+    },
+    async getMoodDiaryYear(_, payload) {
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getMoodDiaryYear/${payload}`,
+        authHeader()
+      );
+      return response;
+    },
+    async getDiaryMonth(_, payload) {
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getDiaryMonth/${payload}`,
+        authHeader()
+      );
+      return response;
+    },
+    async getDiaryDate(_, payload) {
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getDiaryDate/${payload}`,
+        authHeader()
+      );
+      return response;
+    },
+    async updateMoodDiary(_, payload) {
+      let response = await axios.put(
+        `${baseUrl()}/api/member/updateMoodDiary`,
+        {
+          date: payload.date,
+          mood_id: payload.mood_id,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async createDiary(_, payload) {
+      let response = await axios.post(
+        `${baseUrl()}/api/member/createDiary`,
+        {
+          title: payload.title,
+          text: payload.text,
+          date: payload.date,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async deleteDiary(_, diary_id) {
+      let response = await axios.delete(
+        `${baseUrl()}/api/member/deleteDiary/${diary_id}`,
+        authHeader()
+      );
+      return response;
+    },
+    async updateDiary(_, payload) {
+      let response = await axios.put(
+        `${baseUrl()}/api/member/updateDiary`,
+        {
+          diary_id: payload.diary_id,
+          title: payload.title,
+          text: payload.text,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async uploadFile(_, payload) {
+      let data = new FormData();
+      data.append("img", payload);
+      const response = await axios.post(
+        `${baseUrl()}/api/member/uploadFile`,
+        data,
         authHeader()
       );
       return response;
