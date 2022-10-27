@@ -32,8 +32,10 @@ import { mapGetters } from "vuex";
 import Post from "@/components/Post.vue";
 import NavbarSidebar from "@/components/NavbarSidebar.vue";
 import ManagePost from "@/components/ManagePost.vue";
+import mixin from "@/mixin/mixin.js";
 
 export default {
+  mixins: [mixin],
   data() {
     return {
       post_id: this.$route.params.post_id,

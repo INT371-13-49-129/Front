@@ -123,7 +123,11 @@
           @click="$router.push({ name: 'MyProfile' })"
         >
           <vs-avatar circle class="my-2 ml-2">
-            <img :src="getFile(account.image_url)" alt="" />
+            <img
+              v-if="account && account.image_url"
+              :src="getFile(account.image_url)"
+            />
+            <i v-else class="bx bx-user"></i>
           </vs-avatar>
           <div class="ml-3 font-semibold text-lg">
             {{ getName(account) }}
