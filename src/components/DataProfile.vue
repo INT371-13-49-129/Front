@@ -21,6 +21,7 @@
           circle
           border
           size="small"
+          v-show="isLogin && account_id == myAccount.account_id"
         >
           <i class="bx bxs-edit"></i> Edit
         </vs-button>
@@ -55,10 +56,16 @@
         <i class="bx bx-calendar text-base mr-1"></i>joined
         {{ getDate(account.createdAt) }}
       </div>
-      <div class="text-sm flex items-center my-2">
+      <div
+        v-show="isLogin && account_id == myAccount.account_id"
+        class="text-sm flex items-center my-2"
+      >
         <i class="bx bx-envelope text-base mr-1"></i>{{ account.email }}
       </div>
-      <div class="text-sm flex items-center my-2 pl-3">
+      <div
+        v-show="isLogin && account_id == myAccount.account_id"
+        class="text-sm flex items-center my-2 pl-3"
+      >
         * อีเมลไม่แสดงให้ผู้อื่นเห็น
       </div>
       <div class="text-base py-2 border-t-2 border-b-2">โหมดผู้รับฟัง</div>
@@ -74,7 +81,10 @@
           {{ account_topic.topic.name }}
         </div>
       </div>
-      <div class="flex text-sm mt-3 items-center justify-between">
+      <div
+        v-show="false"
+        class="flex text-sm mt-3 items-center justify-between"
+      >
         <div>พร้อมที่จะเป็นผู้รับฟัง</div>
         <vs-switch v-model="is_listener" />
       </div>
