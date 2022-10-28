@@ -7,6 +7,7 @@
       <div class="xl:w-30/100 w-full xl:px-4 px-3 xl:overflow-y-auto">
         <DataProfile :account_id="parseInt(account_id)"></DataProfile>
         <div
+          v-show="false"
           class="filter flex drop-shadow-all w-full my-3 bg-white rounded-2xl justify-between items-center px-4"
         >
           <div class="h-24"></div>

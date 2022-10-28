@@ -12,7 +12,10 @@
           class="bx bx-chevron-left absolute left-0 text-2xl cursor-pointer"
         ></i>
         <div class="text-lg font-semibold">
-          โพสต์ของ {{ post ? getName(post.account) : "" }}
+          <span v-if="post && post.post_type == 'Article'">{{
+            post.title
+          }}</span>
+          <span v-else>โพสต์ของ {{ post ? getName(post.account) : "" }}</span>
         </div>
         <div></div>
       </div>

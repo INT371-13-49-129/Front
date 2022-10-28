@@ -12,7 +12,9 @@
           <div class="h-24"></div>
           <div>
             <div>เขียนไดอารี่</div>
-            <vs-button circle> <div class="px-2">เขียน</div></vs-button>
+            <vs-button circle @click="$router.push({ name: 'MoodDiary' })">
+              <div class="px-2">เขียน</div></vs-button
+            >
           </div>
         </div>
       </div>
@@ -20,14 +22,17 @@
         ref="post"
         class="xl:w-2/4 w-full xl:h-full px-3 xl:overflow-y-auto xl:pb-0 pb-12"
       >
-        <div class="flex justify-between xl:pt-4">
+        <div class="flex justify-between xl:pt-4" v-show="false">
           <div><b>Mood :</b> Today, 9 September 2022</div>
           <div class="flex items-center">
             All
             <i class="bx bx-chevron-right"></i>
           </div>
         </div>
-        <div class="flex mt-3 pb-1 xl:gap-7 gap-4 overflow-x-auto w-full">
+        <div
+          v-show="false"
+          class="flex mt-3 pb-1 xl:gap-7 gap-4 overflow-x-auto w-full"
+        >
           <div
             class="px-1 w-20 flex-shrink-0 rounded-2xl border-primary border-2 border-opacity-70 filter drop-shadow-all bg-white"
             v-for="i in 7"

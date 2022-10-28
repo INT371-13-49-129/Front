@@ -24,7 +24,13 @@
             <i class="bx bx-home text-3xl"></i>
           </div>
           <div
-            class="rounded-full mx-2 w-10 h-10 flex justify-center items-center"
+            class="rounded-full mx-2 w-10 h-10 flex justify-center items-center cursor-pointer"
+            :class="
+              active == 'Article'
+                ? 'bg-primary bg-opacity-10 text-primary'
+                : 'hover:bg-primary hover:bg-opacity-10 hover:text-primary'
+            "
+            @click="$router.push({ name: 'Article' })"
           >
             <i class="bx bx-donate-heart text-3xl"></i>
           </div>
@@ -51,6 +57,7 @@
             <i class="bx bx-message-rounded text-3xl"></i>
           </div>
           <div
+            v-show="false"
             class="rounded-full mx-2 w-10 h-10 flex justify-center items-center"
           >
             <i class="bx bx-bell text-3xl"></i>
@@ -83,7 +90,13 @@
           <i class="bx bx-home text-3xl"></i>
         </div>
         <div
-          class="rounded-full mx-2 w-10 h-10 flex justify-center items-center"
+          class="rounded-full mx-2 w-10 h-10 flex justify-center items-center cursor-pointer"
+          :class="
+            active == 'Article'
+              ? 'bg-primary bg-opacity-10 text-primary'
+              : 'hover:bg-primary hover:bg-opacity-10 hover:text-primary'
+          "
+          @click="$router.push({ name: 'Article' })"
         >
           <i class="bx bx-donate-heart text-3xl"></i>
         </div>
@@ -110,6 +123,7 @@
           <i class="bx bx-message-rounded text-3xl"></i>
         </div>
         <div
+          v-show="false"
           class="rounded-full mx-2 w-10 h-10 flex justify-center items-center"
         >
           <i class="bx bx-bell text-3xl"></i>
@@ -205,6 +219,8 @@ export default {
         return "Messages";
       } else if (this.$route.name == "MoodDiary") {
         return "MoodDiary";
+      } else if (this.$route.name == "Article") {
+        return "Article";
       } else {
         return "";
       }
