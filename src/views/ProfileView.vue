@@ -6,40 +6,80 @@
     >
       <div class="xl:w-30/100 w-full xl:px-4 px-3 xl:overflow-y-auto">
         <DataProfile :account_id="parseInt(account_id)"></DataProfile>
-        <div
-          v-show="false"
-          class="filter flex drop-shadow-all w-full my-3 bg-white rounded-2xl justify-between items-center px-4"
-        >
-          <div class="h-24"></div>
-          <div>
-            <div>เขียนไดอารี่</div>
-            <vs-button circle> <div class="px-2">เขียน</div></vs-button>
-          </div>
-        </div>
       </div>
       <div
         ref="post"
         class="xl:w-2/4 w-full xl:h-full px-3 xl:overflow-y-auto xl:pb-0 pb-12"
       >
         <div class="mt-4">
-          <div v-observe-visibility="visibilityChanged">
-            <b>Post</b>
+          <div v-observe-visibility="visibilityChanged" class="flex border-b-2">
+            <div
+              class="flex-1 font-bold text-lg text-center"
+              :class="
+                accountView.role == 'Psychologist' ? 'cursor-pointer' : ''
+              "
+              @click="postShow = true"
+            >
+              <div
+                class="border-b-2"
+                :class="
+                  postShow ? 'border-primary' : 'border-opacity-0 text-gray-300'
+                "
+              >
+                Post
+              </div>
+            </div>
+            <div
+              v-if="accountView.role == 'Psychologist'"
+              class="flex-1 font-bold text-lg text-center cursor-pointer"
+              @click="postShow = false"
+            >
+              <div
+                class="border-b-2"
+                :class="
+                  !postShow
+                    ? 'border-primary'
+                    : 'border-opacity-0 text-gray-300'
+                "
+              >
+                Article
+              </div>
+            </div>
           </div>
-          <div class="mb-2" v-for="post in allPost" :key="post.post_id">
-            <Post
-              :post="post"
-              @referPost="referPost"
-              @getAllPost="getAllPost"
-            ></Post>
+          <div v-if="postShow">
+            <div class="mb-2" v-for="post in allPost" :key="post.post_id">
+              <Post
+                :post="post"
+                @referPost="referPost"
+                @getAllPost="getAllPost"
+              ></Post>
+            </div>
+            <infinite-loading
+              :identifier="infiniteId"
+              @infinite="LodeMore"
+              spinner="spiral"
+            >
+              <div slot="no-more"></div>
+              <div slot="no-results"></div>
+            </infinite-loading>
           </div>
-          <infinite-loading
-            :identifier="infiniteId"
-            @infinite="LodeMore"
-            spinner="spiral"
-          >
-            <div slot="no-more"></div>
-            <div slot="no-results"></div
-          ></infinite-loading>
+          <div v-else>
+            <div class="mb-2 mt-4" v-for="post in allPost" :key="post.post_id">
+              <ArticleShow
+                :horizontal="true"
+                class="w-full h-32 my-4"
+                :post="post"
+              ></ArticleShow>
+            </div>
+            <infinite-loading
+              :identifier="infiniteId"
+              @infinite="LodeMore"
+              spinner="spiral"
+            >
+              <div slot="no-more"></div>
+              <div slot="no-results"></div>
+            </infinite-loading>
+          </div>
         </div>
       </div>
       <div
@@ -64,6 +104,7 @@ import Post from "@/components/Post.vue";
 import NavbarSidebar from "@/components/NavbarSidebar.vue";
 import ManagePost from "@/components/ManagePost.vue";
 import DataProfile from "@/components/DataProfile.vue";
+import ArticleShow from "@/components/ArticleShow.vue";
 
 export default {
   data() {
@@ -72,6 +113,8 @@ export default {
       page: 1,
       infiniteId: +new Date(),
       isVisible: false,
+      postShow: true,
+      accountView: {},
     };
   },
   components: {
@@ -79,6 +122,7 @@ export default {
     NavbarSidebar,
     ManagePost,
     DataProfile,
+    ArticleShow,
     InfiniteLoading,
   },
   methods: {
@@ -87,14 +131,20 @@ export default {
     },
     async getAllPost() {
       if (this.isLogin && this.account.account_id == this.account_id) {
-        this.$router.push("/profile");
+        this.$router.replace("/profile");
         return null;
       }
       try {
+        const res = await this.$store.dispatch(
+          "getAccountById",
+          this.account_id
+        );
+        this.accountView = res.data.account;
         this.page = 1;
         await this.$store.dispatch("getAllPostAccountPagination", {
           account_id: this.account_id,
           page: this.page,
+          post_type: this.postShow ? "Post" : "Article",
         });
         this.infiniteId += 1;
       } catch (error) {
@@ -108,6 +158,7 @@ export default {
       const res = await this.$store.dispatch("getAllPostAccountPagination", {
         account_id: this.account_id,
         page: this.page,
+        post_type: this.postShow ? "Post" : "Article",
       });
       if (res.data.posts.rows.length > 0) {
         $state.loaded();
@@ -126,8 +177,21 @@ export default {
     const loading = this.$vs.loading();
     this.$store.commit("setCurrentPage", this.$route.name);
     await this.getAllPost();
+    if (this.accountView.role == "Psychologist") {
+      this.postShow = false;
+    }
     await this.$store.dispatch("getAllTag");
     loading.close();
+  },
+  watch: {
+    postShow() {
+      const loading = this.$vs.loading();
+      this.getAllPost();
+      loading.close();
+    },
+    "$route.params.account_id": async function () {
+      this.$router.go(0);
+    },
   },
   computed: {
     ...mapGetters({

@@ -58,20 +58,46 @@
       </div>
     </div>
     <div
+      v-if="post.post_type == 'Article'"
+      :style="{
+        'background-image': post.cover_image_url
+          ? `url(${getFile(post.cover_image_url)})`
+          : `url( ${require('@/assets/img/bg.png')})`,
+        'background-repeat': 'no-repeat',
+        'background-size': 'cover',
+        'background-position': 'center',
+      }"
+      class="bg-blue-100 bg-opacity-50 flex flex-col-reverse flex-shrink-0 w-full xl:h-52 h-40 rounded-2xl my-2"
+    >
+      <div
+        class="xl:w-1/3 w-1/2 h-7 bg-blue-400 mb-3 rounded-r-lg text-white flex items-center overflow-hidden text-xs px-1"
+      >
+        <div class="truncate">{{ post.tag ? post.tag.name : "" }}</div>
+      </div>
+    </div>
+    <div
       v-html="post.text.replace(/(?:\r\n|\r|\n)/g, '<br />')"
       class="mt-2 break-words"
     ></div>
+    <div v-if="post.post_type == 'Article'" class="mt-2">
+      บทความโดย: {{ post.owner }}
+    </div>
     <div
       class="p-3 border-2 rounded-xl my-4"
       v-if="!post.refer_post && !hideReferPost && post.refer_post_id"
     >
       ไม่สามารถแสดงโพสต์ได้ โพสต์นี้อาจถูกลบไปแล้วหรือถูกจำกัดการเข้าถึง
     </div>
-    <div
-      v-if="post.refer_post && !hideReferPost"
-      class="p-3 border-2 rounded-xl my-4"
-    >
-      <Post :post="post.refer_post" :hideComent="true"></Post>
+    <div v-if="post.refer_post && !hideReferPost">
+      <ArticleShow
+        v-if="post.refer_post.post_type == 'Article'"
+        :horizontal="true"
+        class="w-full h-32 mt-1"
+        :post="post.refer_post"
+      ></ArticleShow>
+      <div v-else class="p-3 border-2 rounded-xl my-4">
+        <Post :post="post.refer_post" :hideComent="true"></Post>
+      </div>
     </div>
     <div
       v-if="post.img && post.img.length > 0"
@@ -91,21 +117,35 @@
             ? 'h-full w-1/2'
             : 'h-1/2 w-1/2'
         "
+        v-show="i < 4"
       >
-        <vue-load-image class="h-full w-full">
-          <img
-            slot="image"
-            :src="getFile(img)"
-            class="h-full w-full object-cover cursor-pointer"
-            alt=""
+        <div
+          class="h-full w-full"
+          :class="post.img.length > 4 && i == 3 ? 'relative' : ''"
+        >
+          <vue-load-image class="h-full w-full">
+            <img
+              slot="image"
+              :src="getFile(img)"
+              class="h-full w-full cursor-pointer"
+              :class="cover ? 'object-cover' : 'object-contain'"
+              alt=""
+              @click="imgShow(post.img, i)"
+            />
+            <img
+              slot="preloader"
+              src="@/assets/img/preload.svg"
+              class="animate-pulse object-cover w-full h-full"
+            />
+          </vue-load-image>
+          <div
+            v-if="post.img.length > 4 && i == 3"
             @click="imgShow(post.img, i)"
-          />
-          <img
-            slot="preloader"
-            src="@/assets/img/preload.svg"
-            class="animate-pulse object-cover w-full h-full"
-          />
-        </vue-load-image>
+            class="absolute inset-0 cursor-pointer bg-black bg-opacity-50 flex items-center justify-center h-full w-full text-5xl text-white"
+          >
+            +{{ post.img.length - 4 }}
+          </div>
+        </div>
       </div>
     </div>
     <div v-if="!hideComent">
@@ -180,7 +220,9 @@
     </div>
     <vs-dialog v-model="modalActive">
       <template #header>
-        <div class="mt-2 text-lg font-semibold">จัดการ Post</div>
+        <div class="mt-2 text-lg font-semibold">
+          จัดการ{{ post.post_type == "Article" ? "บทความ" : "โพสต์" }}
+        </div>
       </template>
       <vs-button
         v-if="isLogin && post.account.account_id == account.account_id"
@@ -190,7 +232,9 @@
         border
         size="large"
       >
-        <i class="bx bx-edit-alt mr-2"></i>แก้ไขโพสต์
+        <i class="bx bx-edit-alt mr-2"></i>แก้ไข{{
+          post.post_type == "Article" ? "บทความ" : "โพสต์"
+        }}
       </vs-button>
       <vs-button
         v-if="post.log_edits.length > 0"
@@ -209,7 +253,9 @@
         block
         size="large"
       >
-        <i class="bx bxs-report mr-2"></i>รายงานโพสต์
+        <i class="bx bxs-report mr-2"></i>รายงาน{{
+          post.post_type == "Article" ? "บทความ" : "โพสต์"
+        }}
       </vs-button>
       <vs-button
         v-if="isLogin && post.account.account_id == account.account_id"
@@ -219,12 +265,16 @@
         block
         size="large"
       >
-        <i class="bx bx-trash mr-2"></i>ลบโพสต์
+        <i class="bx bx-trash mr-2"></i>ลบ{{
+          post.post_type == "Article" ? "บทความ" : "โพสต์"
+        }}
       </vs-button>
     </vs-dialog>
     <vs-dialog v-model="modalLogEdit">
       <template #header>
-        <div class="mt-2 text-lg font-semibold">ประวัติการแก้ไขโพสต์</div>
+        <div class="mt-2 text-lg font-semibold">
+          ประวัติการแก้ไข{{ post.post_type == "Article" ? "บทความ" : "โพสต์" }}
+        </div>
       </template>
       <div>
         <div class="font-medium">{{ fullTime(post.createdAt) }}</div>
@@ -291,9 +341,14 @@
     </vs-dialog>
     <vs-dialog v-model="modalDelete">
       <template #header>
-        <div class="mt-2 text-lg font-semibold">ลบโพสต์</div>
+        <div class="mt-2 text-lg font-semibold">
+          ลบ{{ post.post_type == "Article" ? "บทความ" : "โพสต์" }}
+        </div>
       </template>
-      <div class="text-base font-semibold">ต้องการลบโพสต์นี้ใช่ไหม ?</div>
+      <div class="text-base font-semibold">
+        ต้องการลบ{{ post.post_type == "Article" ? "บทความ" : "โพสต์" }}นี้ใช่ไหม
+        ?
+      </div>
       <div class="p-3 border-2 rounded-xl my-4 border-red-300">
         <Post :post="post" :hideComent="true"></Post>
       </div>
@@ -305,7 +360,9 @@
         block
         size="large"
       >
-        <i class="bx bx-trash mr-2"></i>ลบโพสต์
+        <i class="bx bx-trash mr-2"></i>ลบ{{
+          post.post_type == "Article" ? "บทความ" : "โพสต์"
+        }}
       </vs-button>
       <vs-button @click="modalDelete = false" shadow block border size="large">
         ยกเลิก
@@ -347,7 +404,12 @@
             />
             <i v-else class="bx bx-user"></i>
           </vs-avatar>
-          <div class="font-semibold flex-grow">{{ getName(emo.account) }}</div>
+          <div
+            class="font-semibold flex-grow hover:underline cursor-pointer"
+            @click.stop="$router.push('/profile/' + emo.account.account_id)"
+          >
+            {{ getName(emo.account) }}
+          </div>
           <i class="bx bxs-heart text-xl mr-1 text-red-500"></i>
         </div>
       </div>
@@ -368,7 +430,7 @@
               : (img_show_index -= 1)
           "
         ></i>
-        <vue-load-image class="xl:max-h-144 w-screen xl:w-auto px-1 pt-3">
+        <vue-load-image class="xl:max-h-144 w-screen xl:w-full px-1 pt-3">
           <img
             slot="image"
             :src="getFile(img)"
@@ -397,6 +459,7 @@
 <script>
 import Comment from "@/components/Comment.vue";
 import VueLoadImage from "vue-load-image";
+import ArticleShow from "@/components/ArticleShow.vue";
 import { mapGetters } from "vuex";
 import mixin from "@/mixin/mixin.js";
 
@@ -421,6 +484,7 @@ export default {
   components: {
     Comment,
     VueLoadImage,
+    ArticleShow,
   },
   props: {
     post: {
@@ -448,6 +512,10 @@ export default {
     hideReferPost: {
       type: Boolean,
       default: false,
+    },
+    cover: {
+      type: Boolean,
+      default: true,
     },
   },
   methods: {
@@ -489,7 +557,9 @@ export default {
           flat: true,
           color: "primary",
           position: "top-right",
-          title: "ลบโพสต์สำเร็จ",
+          title: `ลบ${
+            this.post.post_type == "Article" ? "บทความ" : "โพสต์"
+          }สำเร็จ`,
         });
         this.$emit("getAllPost");
       } catch (error) {

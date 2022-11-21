@@ -10,7 +10,12 @@
     </vs-avatar>
     <div class="ml-2 flex-grow">
       <div class="flex">
-        <div class="font-semibold">{{ getName(comment.account) }}</div>
+        <div
+          class="font-semibold hover:underline cursor-pointer"
+          @click.stop="$router.push('/profile/' + comment.account.account_id)"
+        >
+          {{ getName(comment.account) }}
+        </div>
         <div v-if="isLogin" class="h-full flex-grow flex justify-end">
           <i
             @click="(selectComment = comment), (modalActive = true)"
@@ -71,7 +76,12 @@
         </vs-avatar>
         <div class="ml-2 flex-grow">
           <div class="flex">
-            <div class="font-semibold">{{ getName(c.account) }}</div>
+            <div
+              class="font-semibold hover:underline cursor-pointer"
+              @click.stop="$router.push('/profile/' + c.account.account_id)"
+            >
+              {{ getName(c.account) }}
+            </div>
             <div v-if="isLogin" class="h-full flex-grow flex justify-end">
               <i
                 @click="(selectComment = c), (modalActive = true)"

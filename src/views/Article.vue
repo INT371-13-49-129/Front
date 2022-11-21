@@ -70,101 +70,53 @@
         <div class="text-lg font-semibold">บทความ</div>
       </div>
       <div
-        class="flex items-center pt-3 pb-4 border-b-2 flex-wrap justify-around"
+        class="flex items-center pt-3 pb-4 border-b-2 flex-wrap justify-center"
       >
         <div
-          v-for="(post, i) in allPost"
+          class="xl:w-1/3 xl:px-3 w-full pb-6"
+          v-for="(post, i) in allPostArticle"
           :key="i"
-          class="p-4 overflow-hidden w-52 h-72 filter drop-shadow-all mb-6 bg-white rounded-2xl mx-2 flex flex-col cursor-pointer"
-          @click="$router.push('/post/' + post.post_id)"
-          v-show="post.post_type == 'Article'"
         >
-          <div
-            :style="
-              post.cover_image_url
-                ? {
-                    'background-image': `url(${getFile(post.cover_image_url)})`,
-                    'background-repeat': 'no-repeat',
-                    'background-size': 'cover',
-                  }
-                : ''
-            "
-            class="w-full h-20 bg-blue-100 rounded-2xl bg-opacity-50 flex flex-col-reverse"
-          >
-            <div
-              class="w-5/12 h-7 bg-blue-400 mb-3 rounded-r-md text-white flex items-center"
-            >
-              {{ post.tag ? post.tag.name : "" }}
-            </div>
-          </div>
-          <div class="text-lg font-medium mt-2">{{ post.title }}</div>
-          <div
-            class="break-words mt-1 text-gray-500 truncate flex-grow"
-            v-html="post.text.replace(/(?:\r\n|\r|\n)/g, '<br />')"
-          ></div>
-          <div class="text-sm flex items-center truncate">
-            <vs-avatar
-              size="30"
-              class="cursor-pointer flex-shrink-0 mr-1"
-              circle
-            >
-              <img
-                v-if="post.account.image_url"
-                :src="getFile(post.account.image_url)"
-                alt=""
-              />
-              <i v-else class="bx bx-user"></i> </vs-avatar
-            >{{ getName(post.account) }}
-          </div>
+          <ArticleShow class="w-full h-96" :post="post"></ArticleShow>
+        </div>
+        <div class="flex justify-center my-6 w-full">
+          <vs-pagination v-model="page" :length="length" class="w-full" />
         </div>
       </div>
-      <infinite-loading
-        :identifier="infiniteId"
-        @infinite="LodeMore"
-        spinner="spiral"
-      >
-        <div slot="no-more"></div>
-        <div slot="no-results"></div>
-      </infinite-loading>
     </div>
   </div>
 </template>
 <script>
 import { mapGetters } from "vuex";
 import NavbarSidebar from "@/components/NavbarSidebar.vue";
-import InfiniteLoading from "vue-infinite-loading";
+import ArticleShow from "@/components/ArticleShow.vue";
 import mixin from "@/mixin/mixin.js";
 
 export default {
   mixins: [mixin],
   data() {
-    return { page: 1, infiniteId: +new Date() };
+    return { page: 1, limit: 12, length: 1 };
   },
   components: {
     NavbarSidebar,
-    InfiniteLoading,
+    ArticleShow,
   },
   methods: {
-    async LodeMore($state) {
-      this.page = parseInt(this.page) + 1;
-      const res = await this.$store.dispatch("getAllPostPagination", {
+    async getPost() {
+      const res = await this.$store.dispatch("getAllPostArticlePagination", {
         page: this.page,
-        limit: 4,
+        limit: this.limit,
+        replace: true,
       });
-      if (res.data.posts.rows.length > 0) {
-        $state.loaded();
-      } else {
-        $state.complete();
+      if (res.status == 200) {
+        this.length = res.data.posts.count / this.limit;
       }
     },
   },
   async mounted() {
     const loading = this.$vs.loading();
     await this.$store.dispatch("getAllAccount");
-    await this.$store.dispatch("getAllPostPagination", {
-      page: this.page,
-      limit: 4,
-    });
+    await this.getPost();
     loading.close();
   },
   computed: {
@@ -172,8 +124,13 @@ export default {
       isLogin: "isLogin",
       account: "getAccount",
       allAccount: "getAllAccount",
-      allPost: "getAllPost",
+      allPostArticle: "getAllPostArticle",
     }),
+  },
+  watch: {
+    page: async function () {
+      await this.getPost();
+    },
   },
 };
 </script>

@@ -9,7 +9,6 @@
         Create an account to enjoy all the services without any ads for free!
       </div>
       <div
-        v-show="false"
         class="flex bg-blue-200 border-2 text-white border-blue-400 mt-6 mb-12 mx-auto rounded-md text-sm w-4/6"
       >
         <div

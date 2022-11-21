@@ -8,7 +8,8 @@
         <MessageConnect></MessageConnect>
       </div>
       <div
-        class="flex flex-col filter xl:drop-shadow-all xl:w-3/5 w-full xl:mt-3 xl:h-95/100 bg-white rounded-2xl p-4 overflow-y-auto"
+        class="flex flex-col filter xl:drop-shadow-all w-full xl:mt-3 xl:h-95/100 bg-white rounded-2xl p-4 overflow-y-auto"
+        :class="showProfile ? 'xl:w-1/3' : 'xl:w-3/5'"
       >
         <div class="flex items-center mb-2">
           <vs-avatar circle>
@@ -19,10 +20,24 @@
             />
             <i v-else class="bx bx-user"></i>
           </vs-avatar>
-          <div class="text-xl font-semibold ml-4 flex-grow">
+          <div
+            class="text-xl font-semibold ml-4 flex-grow hover:underline cursor-pointer"
+            @click.stop="$router.push('/profile/' + getOtherAccount.account_id)"
+          >
             {{ getName(getOtherAccount) }}
           </div>
-          <div><i class="bx bx-info-circle text-3xl"></i></div>
+          <div class="xl:block hidden cursor-pointer">
+            <i
+              @click="showProfile = !showProfile"
+              class="bx bx-info-circle text-3xl"
+            ></i>
+          </div>
+          <div class="cursor-pointer">
+            <i
+              @click="modalActive = true"
+              class="bx bx-dots-vertical-rounded text-2xl"
+            ></i>
+          </div>
         </div>
         <div
           class="flex-grow w-full flex flex-col-reverse overflow-y-auto"
@@ -137,6 +152,17 @@
           >
         </div>
       </div>
+      <div
+        v-show="showProfile && getOtherAccount.account_id"
+        class="xl:block hidden w-1/4"
+      >
+        <DataProfile
+          :key="getOtherAccount.account_id"
+          v-if="getOtherAccount.account_id"
+          ref="dataProfile"
+          :account_id="getOtherAccount.account_id"
+        ></DataProfile>
+      </div>
       <vs-dialog v-model="modalImg">
         <div class="flex items-center justify-center">
           <vue-load-image class="xl:max-h-144 w-screen xl:w-auto px-1 pt-3">
@@ -178,6 +204,26 @@
           ยกเลิก
         </vs-button>
       </vs-dialog>
+      <vs-dialog v-model="modalActive">
+        <template #header>
+          <div class="mt-2 text-lg font-semibold">จัดการการสนทนา</div>
+        </template>
+        <vs-button
+          shadow
+          block
+          border
+          v-if="
+            getOtherAccount.account_id && getOtherAccount.role == 'Psychologist'
+          "
+          @click="showModalReview()"
+          size="large"
+        >
+          <i class="bx bx-star mr-2"></i>ให้คะแนนและรีวิว
+        </vs-button>
+        <vs-button danger border block size="large">
+          <i class="bx bxs-report mr-2"></i>รายงานการสนทนา
+        </vs-button>
+      </vs-dialog>
     </div>
   </div>
 </template>
@@ -187,6 +233,7 @@ import VueLoadImage from "vue-load-image";
 import mixin from "@/mixin/mixin.js";
 import NavbarSidebar from "@/components/NavbarSidebar.vue";
 import MessageConnect from "@/components/MessageConnect.vue";
+import DataProfile from "@/components/DataProfile.vue";
 
 export default {
   mixins: [mixin],
@@ -203,12 +250,15 @@ export default {
       page: 1,
       lastMessage: false,
       isVisible: false,
+      showProfile: false,
+      modalActive: false,
     };
   },
   components: {
     NavbarSidebar,
     MessageConnect,
     VueLoadImage,
+    DataProfile,
   },
   methods: {
     async getData(load_more = false) {
@@ -285,6 +335,7 @@ export default {
       );
     },
     previewFiles() {
+      if (!this.$refs.myFiles.files[0]) return;
       this.files = this.$refs.myFiles.files[0];
       this.imgUpload = URL.createObjectURL(this.files);
       this.modalUpload = true;
@@ -299,6 +350,11 @@ export default {
       if (isVisible) {
         this.getData(true);
       }
+    },
+    showModalReview() {
+      this.showProfile = true;
+      this.modalActive = false;
+      this.$refs.dataProfile.showModalReview();
     },
   },
   async mounted() {
@@ -337,6 +393,7 @@ export default {
   watch: {
     "$route.params.account_id": async function () {
       this.account_id = this.$route.params.account_id;
+      this.showProfile = false;
       await this.getData();
     },
     modalUpload: function () {

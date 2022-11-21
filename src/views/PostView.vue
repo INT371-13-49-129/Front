@@ -22,6 +22,7 @@
       <Post
         v-if="post"
         :post="post"
+        :cover="false"
         @referPost="referPost"
         @editPost="editPost"
         @getAllPost="getPost"
@@ -54,11 +55,21 @@ export default {
       this.$refs.managePost.referPost(post);
     },
     editPost(post) {
-      this.$refs.managePost.editPost(post);
+      if (post.post_type == "Article") {
+        this.$router.push({
+          name: "EditArticle",
+          params: { post_id: post.post_id },
+        });
+      } else {
+        this.$refs.managePost.editPost(post);
+      }
     },
-    async getPost() {
+    async getPost(count_read = false) {
       try {
-        await this.$store.dispatch("getPost", { post_id: this.post_id });
+        await this.$store.dispatch("getPost", {
+          post_id: this.post_id,
+          count_read,
+        });
       } catch (error) {
         console.log(error);
         this.$router.push("/");
@@ -72,7 +83,7 @@ export default {
   async mounted() {
     const loading = this.$vs.loading();
     this.$store.commit("setCurrentPage", this.$route.name);
-    await this.getPost();
+    await this.getPost(true);
     await this.$store.dispatch("getAllTag");
     loading.close();
   },
