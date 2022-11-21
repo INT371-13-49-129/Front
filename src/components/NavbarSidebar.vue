@@ -9,6 +9,31 @@
           class="cursor-pointer"
           @click="$router.push({ name: 'Home' })"
         />
+        <div v-show="active == 'Home'" class="flex py-3 items-center ml-2">
+          <div
+            class="filter drop-shadow-all rounded-full bg-white flex items-center w-auto xl:flex-grow-0 flex-auto"
+          >
+            <input
+              type="text"
+              placeholder="ค้นหา"
+              class="ml-3 mr-2 my-1 xl:w-96 flex-auto w-full"
+              v-model.trim="searchInput"
+              @keyup.enter="$emit('searchfilter', searchInput)"
+            />
+            <div
+              @click="$emit('searchfilter', searchInput)"
+              class="flex justify-center items-center mr-1 h-7 w-7 my-1 rounded-full bg-primary cursor-pointer flex-shrink-0"
+            >
+              <i class="bx bx-search text-white text-lg"></i>
+            </div>
+          </div>
+          <div class="xl:hidden flex justify-center items-center">
+            <i
+              @click="$emit('modalTagShow')"
+              class="bx bx-filter-alt text-2xl ml-1 cursor-pointer"
+            ></i>
+          </div>
+        </div>
       </template>
       <template #right>
         <div v-if="isLogin" class="xl:flex hidden">
@@ -57,7 +82,6 @@
             <i class="bx bx-message-rounded text-3xl"></i>
           </div>
           <div
-            v-show="false"
             class="rounded-full mx-2 w-10 h-10 flex justify-center items-center"
           >
             <i class="bx bx-bell text-3xl"></i>
@@ -123,7 +147,6 @@
           <i class="bx bx-message-rounded text-3xl"></i>
         </div>
         <div
-          v-show="false"
           class="rounded-full mx-2 w-10 h-10 flex justify-center items-center"
         >
           <i class="bx bx-bell text-3xl"></i>
@@ -196,6 +219,7 @@ export default {
   data() {
     return {
       modalAccountShow: false,
+      searchInput: "",
     };
   },
   methods: {

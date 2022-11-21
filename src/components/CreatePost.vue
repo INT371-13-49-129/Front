@@ -14,8 +14,9 @@
           <i v-else class="bx bx-user"></i>
         </vs-avatar>
         <vs-input
+          disabled
           type="text"
-          class="input-comment flex-grow"
+          class="input-comment flex-grow bg-gray-200 rounded-full"
           placeholder="คุณกำลังคิดอะไรอยู่..."
         />
       </div>

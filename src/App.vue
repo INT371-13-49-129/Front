@@ -27,4 +27,13 @@
 html {
   scroll-behavior: smooth;
 }
+
+ul {
+  list-style-type: disc !important;
+  margin-left: 20px !important;
+}
+ol {
+  list-style-type: decimal !important;
+  margin-left: 20px !important;
+}
 </style>

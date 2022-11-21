@@ -1,17 +1,64 @@
 <template>
   <div class="w-full h-full overflow-y-auto flex justify-center">
-    <NavbarSidebar></NavbarSidebar>
-    <div class="mt-16 xl:mb-0 mb-12 xl:w-176 w-full xl:pt-4 pt-2 xl:px-0 px-2">
+    <NavbarSidebar
+      @modalTagShow="
+        (modalTagShow = true),
+          (tags_filter = [...tags_filter_selected]),
+          (postFollowShow = postFollow)
+      "
+      @searchfilter="searchfilter"
+    ></NavbarSidebar>
+    <div class="mt-20 xl:block pt-3 pb-4 hidden mr-6 xl:mb-0 mb-12">
+      <div class="border-2 rounded-2xl border-gray-100 p-2">
+        <div class="flex justify-between items-center mt-2 mb-4">
+          <div class="text-lg font-medium ml-3">บทความน่าสนใจ</div>
+          <div
+            @click="$router.push({ name: 'Blog' })"
+            class="flex items-center text-sm text-gray-400 cursor-pointer"
+          >
+            ทั้งหมด
+            <i class="bx bx-chevron-right mt-1"></i>
+          </div>
+        </div>
+        <div
+          class="w-60 pb-3 px-3"
+          v-for="(post, i) in allPostArticleRecommend"
+          :key="i"
+        >
+          <ArticleShow class="w-full h-72" :post="post"></ArticleShow>
+        </div>
+      </div>
+    </div>
+    <div class="mt-16 xl:mb-0 mb-12 xl:w-160 w-full xl:pt-4 pt-2 xl:px-0 px-2">
       <CreatePost
         v-if="isLogin"
         class="-mb-2 xl:mb-0"
         @modalNewPost="modalNewPost"
       ></CreatePost>
-      <div
-        v-for="post in allPost"
-        :key="post.post_id"
-        v-show="post.post_type == 'Post'"
-      >
+      <div class="flex overflow-x-auto">
+        <div
+          v-if="postFollow"
+          class="px-3 py-1 bg-gray-200 text-gray-600 rounded-full flex items-center mr-1 flex-shrink-0"
+        >
+          การติดตาม
+          <i
+            @click="getPostFollow(false)"
+            class="bx bx-x text-lg ml-1 cursor-pointer"
+          ></i>
+        </div>
+        <div
+          v-for="(tag, i) in tags_filter_selected"
+          :key="tag.id"
+          class="px-3 py-1 bg-gray-200 text-gray-600 rounded-full flex items-center mr-1 flex-shrink-0"
+        >
+          {{ tag.name }}
+          <i
+            @click="tagsfilter(i)"
+            class="bx bx-x text-lg ml-1 cursor-pointer"
+          ></i>
+        </div>
+      </div>
+      <div v-for="post in allPost" :key="post.post_id">
         <Post
           :post="post"
           @referPost="referPost"
@@ -28,69 +75,125 @@
         <div slot="no-results"></div>
       </infinite-loading>
     </div>
-    <div class="mt-20 xl:block pt-3 pb-4 hidden ml-4">
-      <div class="text-lg font-medium mb-4 ml-3">บทความน่าสนใจ</div>
+    <div class="mt-20 xl:block pt-3 pb-4 hidden ml-6 xl:mb-0 mb-12 w-60">
       <div
-        v-for="(post, i) in allPost"
-        :key="i"
-        class="p-4 ml-2 overflow-hidden w-52 h-72 filter drop-shadow-all mb-6 bg-white rounded-2xl mx-2 flex flex-col cursor-pointer"
-        @click="$router.push('/post/' + post.post_id)"
-        v-show="post.post_type == 'Article'"
+        class="ml-2 border-2 rounded-2xl border-gray-100 p-2 mb-4"
+        v-if="isLogin"
       >
-        <div
-          :style="
-            post.cover_image_url
-              ? {
-                  'background-image': `url(${getFile(post.cover_image_url)})`,
-                  'background-repeat': 'no-repeat',
-                  'background-size': 'cover',
-                }
-              : ''
-          "
-          class="w-full h-20 bg-blue-100 rounded-2xl bg-opacity-50 flex flex-col-reverse"
-        >
-          <div
-            class="w-5/12 h-7 bg-blue-400 mb-3 rounded-r-md text-white flex items-center"
-          >
-            {{ post.tag ? post.tag.name : "" }}
+        <div class="text-lg font-medium mt-2 ml-2">โพสต์จาก</div>
+        <div class="my-1 py-2 px-2">
+          <div class="flex">
+            <div
+              class="px-3 py-1 rounded-full cursor-pointer"
+              :class="!postFollow ? 'bg-blue-200' : 'bg-gray-100'"
+              @click="getPostFollow(false)"
+            >
+              ทั้งหมด
+            </div>
+          </div>
+          <div class="flex mt-4">
+            <div
+              class="px-3 py-1 rounded-full cursor-pointer"
+              :class="postFollow ? 'bg-blue-200' : 'bg-gray-100'"
+              @click="getPostFollow(true)"
+            >
+              การติดตาม
+            </div>
           </div>
         </div>
-        <div class="text-lg font-medium mt-2">{{ post.title }}</div>
-        <div
-          class="break-words mt-1 text-gray-500 truncate flex-grow"
-          v-html="post.text.replace(/(?:\r\n|\r|\n)/g, '<br />')"
-        ></div>
-        <div class="text-sm flex items-center truncate">
-          <vs-avatar size="30" class="cursor-pointer flex-shrink-0 mr-1" circle>
-            <img
-              v-if="post.account.image_url"
-              :src="getFile(post.account.image_url)"
-              alt=""
-            />
-            <i v-else class="bx bx-user"></i> </vs-avatar
-          >{{ getName(post.account) }}
-        </div>
       </div>
-      <div class="mt-4 ml-2">
-        <div class="text-lg font-medium mt-6 ml-2">หัวข้อ</div>
+      <div class="ml-2 border-2 rounded-2xl border-gray-100 p-2">
+        <div class="text-lg font-medium mt-2 ml-2">หัวข้อ</div>
         <div
-          v-for="tag in allTag.filter((t) => t.tag_type === 'Category')"
+          v-for="(tag, i) in allTag.filter((t) => t.tag_type === 'Category')"
           :key="tag.tag_id"
-          class="my-1 py-2 px-2 flex"
-          @click="selectTag(tag)"
+          class="my-1 py-2 px-2 flex truncate"
+          @click="
+            (tags_filter = [...tags_filter_selected]), selectTag(tag, true)
+          "
+          v-show="i < tagShow"
         >
           <div
-            class="px-3 py-0.5 rounded-full cursor-pointer"
+            class="px-3 py-1 rounded-full cursor-pointer"
             :class="
-              tag_select.tag_id == tag.tag_id ? 'bg-blue-100' : 'bg-gray-200'
+              tags_filter_selected.find((t) => t.tag_id == tag.tag_id)
+                ? 'bg-blue-200'
+                : 'bg-gray-100'
             "
           >
             # {{ tag.name }}
           </div>
         </div>
+        <div
+          class="text-blue-500 text-sm cursor-pointer pl-2"
+          v-show="
+            allTag.filter((t) => t.tag_type === 'Category').length > tagShow
+          "
+          @click="tagShow += 5"
+        >
+          แสดงเพิ่มเติม
+        </div>
       </div>
     </div>
     <ManagePost ref="managePost" @getAllPost="getAllPost"></ManagePost>
+    <vs-dialog v-model="modalTagShow">
+      <template #header>
+        <h4 class="mt-2 text-lg font-semibold">ตัวกรอง</h4>
+      </template>
+      <div v-if="isLogin">
+        <div class="flex">
+          <div class="py-1 border-b-2 border-primary text-primary">
+            โพสต์จาก
+          </div>
+        </div>
+        <div class="mb-2">
+          <div
+            class="my-1 py-2 px-2 hover:bg-primary hover:bg-opacity-5 cursor-pointer"
+            :class="
+              !postFollowShow ? 'bg-primary bg-opacity-5 text-primary' : ''
+            "
+            @click="postFollowShow = false"
+          >
+            ทั้งหมด
+          </div>
+          <div
+            class="my-1 py-2 px-2 hover:bg-primary hover:bg-opacity-5 cursor-pointer"
+            :class="
+              postFollowShow ? 'bg-primary bg-opacity-5 text-primary' : ''
+            "
+            @click="postFollowShow = true"
+          >
+            การติดตาม
+          </div>
+        </div>
+      </div>
+      <div class="flex">
+        <div class="py-1 border-b-2 border-primary text-primary">หมวดหมู่</div>
+      </div>
+      <div class="max-h-96 overflow-auto">
+        <div
+          v-for="tag in allTag.filter((t) => t.tag_type === 'Category')"
+          :key="tag.tag_id"
+          class="my-1 py-2 px-2 hover:bg-primary hover:bg-opacity-5 cursor-pointer"
+          :class="
+            tags_filter.find((t) => t.tag_id == tag.tag_id)
+              ? 'bg-primary bg-opacity-5 text-primary'
+              : ''
+          "
+          @click="selectTag(tag)"
+        >
+          {{ tag.name }}
+        </div>
+      </div>
+      <vs-button
+        class="w-full button-login"
+        @click="
+          (modalTagShow = false), (postFollow = postFollowShow), tagsfilter()
+        "
+      >
+        ตกลง</vs-button
+      >
+    </vs-dialog>
   </div>
 </template>
 <script>
@@ -100,6 +203,7 @@ import Post from "@/components/Post.vue";
 import NavbarSidebar from "@/components/NavbarSidebar.vue";
 import ManagePost from "@/components/ManagePost.vue";
 import CreatePost from "@/components/CreatePost.vue";
+import ArticleShow from "@/components/ArticleShow.vue";
 import mixin from "@/mixin/mixin.js";
 
 export default {
@@ -108,7 +212,14 @@ export default {
     return {
       page: 1,
       infiniteId: +new Date(),
-      tag_select: {},
+      tags_filter_selected: [],
+      tags_filter: [],
+      tagShow: 5,
+      tag_id: "",
+      search: "",
+      modalTagShow: false,
+      postFollow: false,
+      postFollowShow: false,
     };
   },
   components: {
@@ -117,6 +228,7 @@ export default {
     ManagePost,
     CreatePost,
     InfiniteLoading,
+    ArticleShow,
   },
   methods: {
     referPost(post) {
@@ -128,18 +240,58 @@ export default {
     editPost(post) {
       this.$refs.managePost.editPost(post);
     },
-    selectTag(tag) {
-      this.tag_select = tag;
+    selectTag(tag, load = false) {
+      if (this.tags_filter.find((t) => t.tag_id == tag.tag_id)) {
+        this.tags_filter = this.tags_filter.filter(
+          (t) => t.tag_id != tag.tag_id
+        );
+      } else {
+        this.tags_filter.push(tag);
+      }
+      if (load) {
+        this.tagsfilter();
+      }
+    },
+    async tagsfilter(i = -1) {
+      const loading = this.$vs.loading();
+      if (i == -1) {
+        this.tags_filter_selected = [...this.tags_filter];
+      } else {
+        this.tags_filter_selected.splice(i, 1);
+      }
+      this.tag_id = this.tags_filter_selected.map((t) => t.tag_id).join(",");
+      await this.getAllPost();
+      loading.close();
+    },
+    async searchfilter(searchInput) {
+      const loading = this.$vs.loading();
+      this.search = encodeURIComponent(searchInput);
+      await this.getAllPost();
+      loading.close();
+    },
+    getPostFollow(follow) {
+      const loading = this.$vs.loading();
+      this.postFollow = follow;
+      this.getAllPost();
+      loading.close();
     },
     async getAllPost() {
       this.page = 1;
-      await this.$store.dispatch("getAllPostPagination", { page: this.page });
+      await this.$store.dispatch("getAllPostSearchTagPagination", {
+        page: this.page,
+        tag_id: this.tag_id,
+        search: this.search,
+        follow: this.postFollow,
+      });
       this.infiniteId += 1;
     },
     async LodeMore($state) {
       this.page += 1;
-      const res = await this.$store.dispatch("getAllPostPagination", {
+      const res = await this.$store.dispatch("getAllPostSearchTagPagination", {
         page: this.page,
+        tag_id: this.tag_id,
+        search: this.search,
+        follow: this.postFollow,
       });
       if (res.data.posts.rows.length > 0) {
         $state.loaded();
@@ -151,7 +303,13 @@ export default {
   async mounted() {
     const loading = this.$vs.loading();
     this.$store.commit("setCurrentPage", this.$route.name);
-    await this.$store.dispatch("getAllPostPagination", { page: this.page });
+    await this.$store.dispatch("getAllPostSearchTagPagination", {
+      page: this.page,
+    });
+    await this.$store.dispatch("getAllPostArticleRecommendPagination", {
+      page: 1,
+      limit: 9,
+    });
     await this.$store.dispatch("getAllTag");
     loading.close();
   },
@@ -160,6 +318,7 @@ export default {
       isLogin: "isLogin",
       account: "getAccount",
       allPost: "getAllPost",
+      allPostArticleRecommend: "getAllPostArticleRecommend",
       allTag: "getAllTag",
     }),
   },

@@ -1,7 +1,7 @@
 <template>
   <div class="w-full h-full overflow-y-auto">
     <NavbarSidebar></NavbarSidebar>
-    <div class="pt-16 xl:pb-0 pb-12 w-full h-full flex justify-center">
+    <div class="pt-16 xl:pb-0 pb-12 w-full h-auto flex justify-center">
       <div class="xl:w-4/6 w-full h-full px-3">
         <div class="flex items-center py-2">
           <i
@@ -23,6 +23,7 @@
                     : `url(${getFile(editAccount.cover_image_url)})`,
                   'background-repeat': 'no-repeat',
                   'background-size': 'cover',
+                  'background-position': 'center',
                 }
               : ''
           "
@@ -50,10 +51,7 @@
                 />
                 <i v-else class="bx bx-user"></i>
               </vs-avatar>
-              <div class="flex-grow">
-                <div class="text-sm">ขนาดไฟล์: สูงสุด 1 MB</div>
-                <div class="text-sm">ไฟล์ที่รองรับ: .JPEG, .PNG</div>
-              </div>
+              <div class="flex-grow"></div>
               <div class="">
                 <label
                   for="url"
@@ -96,10 +94,7 @@
                 </vue-load-image>
                 <div v-else class="bg-blue-100 w-full h-12"></div>
               </div>
-              <div class="flex-grow">
-                <div class="text-sm">ขนาดไฟล์: สูงสุด 1 MB</div>
-                <div class="text-sm">ไฟล์ที่รองรับ: .JPEG, .PNG</div>
-              </div>
+              <div class="flex-grow"></div>
               <div class="">
                 <label
                   for="url2"
@@ -341,11 +336,13 @@ export default {
       loading.close();
     },
     previewFiles() {
+      if (!this.$refs.myFiles.files[0]) return;
       this.files = this.$refs.myFiles.files[0];
       this.img = URL.createObjectURL(this.files);
       this.upLoadFile = true;
     },
     previewFiles2() {
+      if (!this.$refs.myFiles2.files[0]) return;
       this.files2 = this.$refs.myFiles2.files[0];
       this.img2 = URL.createObjectURL(this.files2);
       this.upLoadFile2 = true;

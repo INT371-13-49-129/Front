@@ -51,7 +51,7 @@
           <option value="Personal">ส่วนตัว</option>
         </select>
         <textarea
-          class="focus:outline-none w-full bg-gray-100 px-6 py-4 rounded-xl mb-2 scroll"
+          class="focus:outline-none w-full bg-gray-100 px-6 py-4 rounded-xl mb-2 scroll border-2"
           :class="refer_post.post_id ? 'h-20' : 'h-40'"
           v-model.trim="text"
         ></textarea>
@@ -211,19 +211,21 @@
           หมวดหมู่
         </div>
       </div>
-      <div
-        v-for="tag in allTag.filter((t) => t.tag_type === tagSelect)"
-        :key="tag.tag_id"
-        class="my-1 py-2 px-2 hover:bg-primary hover:bg-opacity-5 cursor-pointer"
-        :class="
-          tags_feeling.find((t) => t.tag_id == tag.tag_id) ||
-          tags_category.find((t) => t.tag_id == tag.tag_id)
-            ? 'bg-primary bg-opacity-5 text-primary'
-            : ''
-        "
-        @click="selectTag(tag)"
-      >
-        {{ tag.name }}
+      <div class="max-h-96 overflow-auto">
+        <div
+          v-for="tag in allTag.filter((t) => t.tag_type === tagSelect)"
+          :key="tag.tag_id"
+          class="my-1 py-2 px-2 hover:bg-primary hover:bg-opacity-5 cursor-pointer"
+          :class="
+            tags_feeling.find((t) => t.tag_id == tag.tag_id) ||
+            tags_category.find((t) => t.tag_id == tag.tag_id)
+              ? 'bg-primary bg-opacity-5 text-primary'
+              : ''
+          "
+          @click="selectTag(tag)"
+        >
+          {{ tag.name }}
+        </div>
       </div>
       <vs-button class="w-full button-login" @click="modalTagShow = false"
         >ตกลง</vs-button
@@ -358,7 +360,6 @@ export default {
     async sendEditPost() {
       const loading = this.$vs.loading();
       let img = await this.upLoadFile();
-      console.log(img);
       img = img.map((i) => {
         return i.data ? i.data.file_id : i;
       });
@@ -387,6 +388,7 @@ export default {
       fileInputElement.click();
     },
     previewFiles() {
+      if (!this.$refs.myFiles.files[0]) return;
       const file = this.$refs.myFiles.files[0];
       this.imgs.push({ url: URL.createObjectURL(file), isNew: true, file });
     },

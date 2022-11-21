@@ -21,6 +21,8 @@ export default new Vuex.Store({
     sendMail: "",
     isLogin: "",
     allPost: [],
+    allPostArticle: [],
+    allPostArticleRecommend: [],
     allMyPost: [],
     allTag: [],
     allTopic: [],
@@ -36,6 +38,8 @@ export default new Vuex.Store({
     isLogin: (state) => state.isLogin,
     getAccount: (state) => state.account,
     getAllPost: (state) => state.allPost,
+    getAllPostArticle: (state) => state.allPostArticle,
+    getAllPostArticleRecommend: (state) => state.allPostArticleRecommend,
     getAllMyPost: (state) => state.allMyPost,
     getAllTag: (state) => state.allTag,
     getAllTopic: (state) => state.allTopic,
@@ -61,6 +65,12 @@ export default new Vuex.Store({
     },
     setAllPost(state, payload) {
       state.allPost = payload;
+    },
+    setAllPostArticle(state, payload) {
+      state.allPostArticle = payload;
+    },
+    setAllPostArticleRecommend(state, payload) {
+      state.allPostArticleRecommend = payload;
     },
     setAllMyPost(state, payload) {
       state.allMyPost = payload;
@@ -173,7 +183,9 @@ export default new Vuex.Store({
     },
     async getPost({ commit, state }, payload) {
       let response = await axios.get(
-        `${baseUrl()}/api/member/getPost/${payload.post_id}`,
+        `${baseUrl()}/api/member/getPost/${payload.post_id}${
+          payload.count_read ? "?count_read=true" : ""
+        }`,
         authHeader()
       );
       if (response.status == 200) {
@@ -203,7 +215,10 @@ export default new Vuex.Store({
               }
             : null,
         };
-        if (state.currentPage == "PostView") {
+        if (
+          state.currentPage == "PostView" ||
+          state.currentPage == "EditArticle"
+        ) {
           commit("setPostView", post);
         } else {
           let set = "setAllPost";
@@ -318,10 +333,216 @@ export default new Vuex.Store({
       }
       return response;
     },
-    async getAllPostAccountPagination({ commit, state }, payload) {
-      let { limit = 5, page = 1, account_id } = payload;
+    async getAllPostSearchTagPagination({ commit, state }, payload) {
+      let {
+        limit = 5,
+        page = 1,
+        tag_id = "",
+        search = "",
+        follow = false,
+      } = payload;
       let response = await axios.get(
-        `${baseUrl()}/api/member/getAllPostAccountPage/${account_id}?page=${page}&limit=${limit}`,
+        `${baseUrl()}/api/member/getAllPostSearchTagPage?page=${page}&limit=${limit}&tag_id=${tag_id}&search=${search}&follow=${follow}`,
+        authHeader()
+      );
+      if (response.status == 200) {
+        const allPost = response.data.posts.rows
+          .map((post) => {
+            return {
+              count_posts: post.posts.length,
+              count_emotions: post.emotions.length,
+              count_comments: post.comments.reduce(
+                (p, v) => p + v.comments.length + 1,
+                0
+              ),
+              tags_feeling: post.post_tags.filter(
+                (t) => t.tag.tag_type === "Feeling"
+              ),
+              tags_category: post.post_tags.filter(
+                (t) => t.tag.tag_type === "Category"
+              ),
+              ...post,
+              refer_post: post.refer_post
+                ? {
+                    tags_feeling: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Feeling"
+                    ),
+                    tags_category: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Category"
+                    ),
+                    ...post.refer_post,
+                  }
+                : null,
+            };
+          })
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+
+        commit(
+          "setAllPost",
+          page == 1 ? allPost : state.allPost.concat(allPost)
+        );
+      }
+      return response;
+    },
+    async getAllPostArticlePagination({ commit, state }, payload) {
+      let { limit = 5, page = 1, replace = false } = payload;
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getAllPostPage?page=${page}&limit=${limit}&post_type=Article`,
+        authHeader()
+      );
+      if (response.status == 200) {
+        const allPostArticle = response.data.posts.rows
+          .map((post) => {
+            return {
+              count_posts: post.posts.length,
+              count_emotions: post.emotions.length,
+              count_comments: post.comments.reduce(
+                (p, v) => p + v.comments.length + 1,
+                0
+              ),
+              tags_feeling: post.post_tags.filter(
+                (t) => t.tag.tag_type === "Feeling"
+              ),
+              tags_category: post.post_tags.filter(
+                (t) => t.tag.tag_type === "Category"
+              ),
+              ...post,
+              refer_post: post.refer_post
+                ? {
+                    tags_feeling: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Feeling"
+                    ),
+                    tags_category: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Category"
+                    ),
+                    ...post.refer_post,
+                  }
+                : null,
+            };
+          })
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        if (replace) {
+          commit("setAllPostArticle", allPostArticle);
+        } else {
+          commit(
+            "setAllPostArticle",
+            page == 1
+              ? allPostArticle
+              : state.allPostArticle.concat(allPostArticle)
+          );
+        }
+      }
+      return response;
+    },
+    async getAllPostArticleSearchTagPagination({ commit, state }, payload) {
+      let {
+        limit = 5,
+        page = 1,
+        replace = false,
+        tag_id = "",
+        search = "",
+        follow = false,
+      } = payload;
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getAllPostSearchTagPage?page=${page}&limit=${limit}&post_type=Article&tag_id=${tag_id}&search=${search}&follow=${follow}`,
+        authHeader()
+      );
+      if (response.status == 200) {
+        const allPostArticle = response.data.posts.rows
+          .map((post) => {
+            return {
+              count_posts: post.posts.length,
+              count_emotions: post.emotions.length,
+              count_comments: post.comments.reduce(
+                (p, v) => p + v.comments.length + 1,
+                0
+              ),
+              tags_feeling: post.post_tags.filter(
+                (t) => t.tag.tag_type === "Feeling"
+              ),
+              tags_category: post.post_tags.filter(
+                (t) => t.tag.tag_type === "Category"
+              ),
+              ...post,
+              refer_post: post.refer_post
+                ? {
+                    tags_feeling: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Feeling"
+                    ),
+                    tags_category: post.refer_post.post_tags.filter(
+                      (t) => t.tag.tag_type === "Category"
+                    ),
+                    ...post.refer_post,
+                  }
+                : null,
+            };
+          })
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        if (replace) {
+          commit("setAllPostArticle", allPostArticle);
+        } else {
+          commit(
+            "setAllPostArticle",
+            page == 1
+              ? allPostArticle
+              : state.allPostArticle.concat(allPostArticle)
+          );
+        }
+      }
+      return response;
+    },
+    async getAllPostArticleRecommendPagination({ commit }, payload) {
+      let { limit = 5, page = 1 } = payload;
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getAllPostPage?page=${page}&limit=${limit}&post_type=Article&order_count_read=true`,
+        authHeader()
+      );
+      if (response.status == 200) {
+        const allPostArticleRecommend = response.data.posts.rows.map((post) => {
+          return {
+            count_posts: post.posts.length,
+            count_emotions: post.emotions.length,
+            count_comments: post.comments.reduce(
+              (p, v) => p + v.comments.length + 1,
+              0
+            ),
+            tags_feeling: post.post_tags.filter(
+              (t) => t.tag.tag_type === "Feeling"
+            ),
+            tags_category: post.post_tags.filter(
+              (t) => t.tag.tag_type === "Category"
+            ),
+            ...post,
+            refer_post: post.refer_post
+              ? {
+                  tags_feeling: post.refer_post.post_tags.filter(
+                    (t) => t.tag.tag_type === "Feeling"
+                  ),
+                  tags_category: post.refer_post.post_tags.filter(
+                    (t) => t.tag.tag_type === "Category"
+                  ),
+                  ...post.refer_post,
+                }
+              : null,
+          };
+        });
+        commit("setAllPostArticleRecommend", allPostArticleRecommend);
+      }
+      return response;
+    },
+    async getAllPostAccountPagination({ commit, state }, payload) {
+      let { limit = 5, page = 1, account_id, post_type = "Post" } = payload;
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getAllPostAccountPage/${account_id}?page=${page}&limit=${limit}&post_type=${post_type}`,
         authHeader()
       );
       if (response.status == 200) {
@@ -411,9 +632,9 @@ export default new Vuex.Store({
       return response;
     },
     async getAllMyPostPagination({ commit, dispatch, state }, payload) {
-      let { limit = 5, page = 1 } = payload;
+      let { limit = 5, page = 1, post_type = "Post" } = payload;
       let response = await axios.get(
-        `${baseUrl()}/api/member/getAllMyPostPage?page=${page}&limit=${limit}`,
+        `${baseUrl()}/api/member/getAllMyPostPage?page=${page}&limit=${limit}&post_type=${post_type}`,
         authHeader()
       );
       if (response.status == 200) {
@@ -564,7 +785,7 @@ export default new Vuex.Store({
           text: payload.text,
           tag_id: payload.tag_id,
           cover_image_url: payload.cover_image_url,
-          // img: payload.img,
+          img: payload.img,
           owner: payload.owner,
           title: payload.title,
         },
@@ -581,6 +802,22 @@ export default new Vuex.Store({
           post_id: payload.post_id,
           img: payload.img,
           publish_status: payload.publish_status,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async updatePostArticle(_, payload) {
+      let response = await axios.put(
+        `${baseUrl()}/api/member/updatePostArticle`,
+        {
+          post_id: payload.post_id,
+          text: payload.text,
+          tag_id: payload.tag_id,
+          cover_image_url: payload.cover_image_url,
+          img: payload.img,
+          owner: payload.owner,
+          title: payload.title,
         },
         authHeader()
       );
@@ -780,6 +1017,49 @@ export default new Vuex.Store({
           title: payload.title,
           text: payload.text,
         },
+        authHeader()
+      );
+      return response;
+    },
+    async createFollow(_, payload) {
+      let response = await axios.post(
+        `${baseUrl()}/api/member/createFollow`,
+        {
+          follow_account_id: payload,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async deleteFollow(_, payload) {
+      let response = await axios.delete(
+        `${baseUrl()}/api/member/deleteFollow/${payload}`,
+        authHeader()
+      );
+      return response;
+    },
+    async getFollowByAccountId(_, payload) {
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getFollowByAccountId/${payload}`,
+        authHeader()
+      );
+      return response;
+    },
+    async createRating(_, payload) {
+      let response = await axios.post(
+        `${baseUrl()}/api/member/createRating`,
+        {
+          review: payload.review,
+          rating_account_id: payload.rating_account_id,
+          rating_score: payload.rating_score,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async getRatingByAccountId(_, payload) {
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getRatingByAccountId/${payload}`,
         authHeader()
       );
       return response;

@@ -90,8 +90,16 @@ const routes = [
     },
   },
   {
-    path: "/article/manage",
+    path: "/managearticle",
     name: "ManageArticle",
+    component: () => import("../views/ManageArticle.vue"),
+    meta: {
+      auth: true,
+    },
+  },
+  {
+    path: "/managearticle/:post_id",
+    name: "EditArticle",
     component: () => import("../views/ManageArticle.vue"),
     meta: {
       auth: true,
@@ -103,6 +111,18 @@ const routes = [
     component: () => import("../views/Article.vue"),
     meta: {
       auth: true,
+    },
+  },
+  {
+    path: "/blog",
+    name: "Blog",
+    component: () => import("../views/Blog.vue"),
+  },
+  {
+    path: "/:catchAll(.*)",
+    name: "NotFound",
+    beforeEnter: (to, from, next) => {
+      next({ name: "Home" });
     },
   },
 ];
