@@ -44,7 +44,7 @@
         <div
           class="w-full flex flex-row-reverse mt-2 mb-4 text-xs text-gray-500 underline"
         >
-          <router-link to="/">Forget password?</router-link>
+          <router-link v-if="false" to="/">Forget password?</router-link>
         </div>
         <vs-button
           :active="true"

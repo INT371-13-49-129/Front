@@ -72,6 +72,15 @@ const routes = [
     },
   },
   {
+    path: "/profile/edit/psychologist",
+    name: "EditProfilePsychologist",
+    component: () => import("../views/EditProfilePsychologist.vue"),
+    meta: {
+      auth: true,
+      noAuthPsychologist: true,
+    },
+  },
+  {
     path: "/post/:post_id",
     name: "PostView",
     component: () => import("../views/PostView.vue"),
@@ -95,6 +104,7 @@ const routes = [
     component: () => import("../views/ManageArticle.vue"),
     meta: {
       auth: true,
+      authPsychologist: true,
     },
   },
   {
@@ -106,9 +116,25 @@ const routes = [
     },
   },
   {
-    path: "/article",
-    name: "Article",
-    component: () => import("../views/Article.vue"),
+    path: "/heal",
+    name: "Heal",
+    component: () => import("../views/Heal.vue"),
+    meta: {
+      auth: true,
+    },
+  },
+  {
+    path: "/listener",
+    name: "Listener",
+    component: () => import("../views/AllListener.vue"),
+    meta: {
+      auth: true,
+    },
+  },
+  {
+    path: "/psychologist",
+    name: "Psychologist",
+    component: () => import("../views/AllPsychologist.vue"),
     meta: {
       auth: true,
     },
@@ -139,6 +165,13 @@ router.beforeEach(async (to, from, next) => {
     next({ path: "/" });
   }
   if (to.meta.auth && !store.getters.isLogin) {
+    next({ path: "/" });
+  }
+  if (
+    to.meta.noAuthPsychologist &&
+    !store.getters.isLogin &&
+    store.getters.getAccount.role === "Psychologist"
+  ) {
     next({ path: "/" });
   }
   if (

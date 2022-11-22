@@ -8,26 +8,6 @@
       <div class="text-sm text-center mx-10 mt-3 text-gray-400">
         Create an account to enjoy all the services without any ads for free!
       </div>
-      <div
-        class="flex bg-blue-200 border-2 text-white border-blue-400 mt-6 mb-12 mx-auto rounded-md text-sm w-4/6"
-      >
-        <div
-          class="w-1/2 text-center py-1 cursor-pointer"
-          :class="{
-            'border-r-2 border-blue-400 bg-white rounded-md text-blue-400 font-semibold': true,
-          }"
-        >
-          User
-        </div>
-        <div
-          class="w-1/2 text-center py-1 cursor-pointer"
-          :class="{
-            'border-l-2 border-blue-400 bg-white rounded-md text-blue-400 font-semibold': false,
-          }"
-        >
-          Psychologist
-        </div>
-      </div>
       <div class="w-4/6 mx-auto center content-inputs">
         <vs-input
           type="email"

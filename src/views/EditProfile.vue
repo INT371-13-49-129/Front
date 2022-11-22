@@ -9,7 +9,11 @@
             @click="$router.push('/profile')"
           ></i>
           <div class="text-lg font-semibold flex-grow">Edit Profile</div>
-          <vs-button circle @click="submitFrom()">
+          <vs-button
+            :disabled="!validate.username || editAccount.name == ''"
+            circle
+            @click="submitFrom()"
+          >
             <div class="px-2">Save</div></vs-button
           >
         </div>
@@ -147,6 +151,23 @@
               class="input-comment flex-grow w-full xl:w-auto"
             ></vs-input>
           </div>
+          <div class="flex xl:flex-row flex-col xl:items-center mt-4 mb-6">
+            <div class="w-32">บทบาท</div>
+            <div class="flex flex-col flex-grow w-full xl:w-auto">
+              <div
+                class="rounded-xl border-2 flex-grow w-full xl:w-auto px-3 py-2"
+              >
+                {{ account.role === "Member" ? "ผู้ใช้งาน" : "ผู้เชี่ยวชาญ" }}
+              </div>
+              <div
+                v-if="account.role === 'Member'"
+                @click="$router.push('/profile/edit/psychologist')"
+                class="text-xs mt-1 hover:underline hover:text-primary text-gray-400 cursor-pointer"
+              >
+                ส่งคำขอเป็นผู้เชี่ยวชาญ
+              </div>
+            </div>
+          </div>
           <div
             class="flex xl:flex-row flex-col xl:items-center py-4 border-t-2"
           >
@@ -162,7 +183,31 @@
           <div class="flex items-center mt-3">
             <div class="xl:w-32 pr-2 xl:pr-0">อีเมล</div>
             <div class="flex-grow">{{ account.email }}</div>
-            <i class="bx bx-chevron-right text-base"></i>
+          </div>
+        </div>
+        <div class="rounded-lg p-3 border-2 mt-4">
+          <div class="text-lg font-semibold">ข้อมูลผู้เชี่ยวชาญ</div>
+          <div class="flex xl:flex-row flex-col xl:items-center py-4 w-full">
+            <div class="w-32">ชื่อ</div>
+            <vs-input
+              v-model="editAccount.name"
+              type="text"
+              class="input-comment flex-grow w-full xl:w-auto"
+            >
+              <template #message-danger v-if="editAccount.name == ''">
+                Please enter Name
+              </template></vs-input
+            >
+          </div>
+          <div class="flex xl:flex-row flex-col xl:items-center">
+            <div class="xl:w-32 mr-4">คำอธิบาย</div>
+            <textarea
+              v-model="editAccount.description"
+              class="fbg-white border-2 px-2 h-28 text-gray-600 border-gray-200 rounded-xl focus:outline-none w-full py-1.5"
+            ></textarea>
+          </div>
+          <div class="text-sm text-gray-400 mb-3 mt-1">
+            คำอธิบายเกี่ยวกับความเชี่ยวชาญ ซึ่งจะแสดงในหน้าโปรไฟล์ของคุณ
           </div>
         </div>
         <div class="rounded-lg p-3 border-2 mt-4">
@@ -187,7 +232,10 @@
               เพิ่มหัวข้อ +
             </div>
           </div>
-          <div class="flex text-sm mt-3 items-center justify-between">
+          <div
+            v-if="account.role === 'Member'"
+            class="flex text-sm mt-3 items-center justify-between"
+          >
             <div>พร้อมที่จะเป็นผู้รับฟัง</div>
             <vs-switch v-model="editAccount.is_listener" />
           </div>
@@ -231,6 +279,8 @@ export default {
     return {
       editAccount: {
         username: "",
+        name: "",
+        description: "",
         gender: "",
         bio: "",
         date_of_birth: "",
@@ -294,7 +344,7 @@ export default {
     async submitFrom() {
       const loading = this.$vs.loading();
       this.validateUsername();
-      if (this.validate.username) {
+      if (this.validate.username && this.editAccount.name != "") {
         try {
           if (this.upLoadFile) {
             const res = await this.$store.dispatch("uploadFile", this.files);

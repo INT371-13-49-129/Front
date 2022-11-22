@@ -28,6 +28,8 @@ export default new Vuex.Store({
     allTopic: [],
     allMessageConnect: [],
     allAccount: [],
+    allAccountPsychologist: [],
+    allAccountIsListener: [],
     messageConnect: {},
     currentPage: "",
     postView: null,
@@ -45,6 +47,8 @@ export default new Vuex.Store({
     getAllTopic: (state) => state.allTopic,
     getAllMessageConnect: (state) => state.allMessageConnect,
     getAllAccount: (state) => state.allAccount,
+    getAllAccountPsychologist: (state) => state.allAccountPsychologist,
+    getAllAccountIsListener: (state) => state.allAccountIsListener,
     getMessageConnect: (state) => state.messageConnect,
     getCurrentPage: (state) => state.currentPage,
     getPostView: (state) => state.postView,
@@ -86,6 +90,12 @@ export default new Vuex.Store({
     },
     setAllAccount(state, payload) {
       state.allAccount = payload;
+    },
+    setAllAccountPsychologist(state, payload) {
+      state.allAccountPsychologist = payload;
+    },
+    setAllAccountIsListener(state, payload) {
+      state.allAccountIsListener = payload;
     },
     setMessageConnect(state, payload) {
       state.messageConnect = payload;
@@ -869,6 +879,24 @@ export default new Vuex.Store({
       commit("setAllAccount", response.data.accounts);
       return response;
     },
+    async getAllAccountPsychologistPagination({ commit }, payload) {
+      let { limit = 10, page = 1 } = payload;
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getAllAccountPsychologistPagination?page=${page}&limit=${limit}`,
+        authHeader()
+      );
+      commit("setAllAccountPsychologist", response.data);
+      return response;
+    },
+    async getAllAccountIsListenerPagination({ commit }, payload) {
+      let { limit = 10, page = 1 } = payload;
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getAllAccountIsListenerPagination?page=${page}&limit=${limit}`,
+        authHeader()
+      );
+      commit("setAllAccountIsListener", response.data);
+      return response;
+    },
     async getMessageConnect({ commit }, payload) {
       let response = await axios.get(
         `${baseUrl()}/api/member/getMessageConnect/${payload}`,
@@ -924,6 +952,8 @@ export default new Vuex.Store({
         `${baseUrl()}/api/member/updateAccountProfile`,
         {
           username: payload.username,
+          name: payload.name,
+          description: payload.description,
           gender: payload.gender,
           bio: payload.bio,
           date_of_birth: payload.date_of_birth,
@@ -931,6 +961,16 @@ export default new Vuex.Store({
           cover_image_url: payload.cover_image_url,
           is_listener: payload.is_listener,
           account_topics: payload.account_topics,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async updateAccountListener(_, payload) {
+      let response = await axios.put(
+        `${baseUrl()}/api/member/updateAccountListener`,
+        {
+          is_listener: payload.is_listener,
         },
         authHeader()
       );
@@ -1060,6 +1100,76 @@ export default new Vuex.Store({
     async getRatingByAccountId(_, payload) {
       let response = await axios.get(
         `${baseUrl()}/api/member/getRatingByAccountId/${payload}`,
+        authHeader()
+      );
+      return response;
+    },
+    async requestPsychologist(_, payload) {
+      let response = await axios.put(
+        `${baseUrl()}/api/member/requestPsychologist`,
+        {
+          name: payload.name,
+          description: payload.description,
+          file_approve: payload.file_approve,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async createRequest(_, payload) {
+      let response = await axios.post(
+        `${baseUrl()}/api/member/createRequest`,
+        {
+          text: payload.text,
+          message_connect_id: payload.message_connect_id,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async getRequest(_, payload) {
+      let response = await axios.get(
+        `${baseUrl()}/api/member/getRequest/${payload}`,
+        authHeader()
+      );
+      return response;
+    },
+    async acceptRequest(_, payload) {
+      let response = await axios.put(
+        `${baseUrl()}/api/member/acceptRequest`,
+        {
+          message_connect_id: payload.message_connect_id,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async rejectRequest(_, payload) {
+      let response = await axios.put(
+        `${baseUrl()}/api/member/rejectRequest`,
+        {
+          message_connect_id: payload.message_connect_id,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async activateMessageConnect(_, payload) {
+      let response = await axios.put(
+        `${baseUrl()}/api/member/activateMessageConnect`,
+        {
+          message_connect_id: payload.message_connect_id,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async deactivateMessageConnect(_, payload) {
+      let response = await axios.put(
+        `${baseUrl()}/api/member/deactivateMessageConnect`,
+        {
+          message_connect_id: payload.message_connect_id,
+        },
         authHeader()
       );
       return response;

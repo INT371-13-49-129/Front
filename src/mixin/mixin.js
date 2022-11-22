@@ -53,7 +53,9 @@ export default {
       return `${baseUrl()}/api/member/getFile/${file_id}`;
     },
     getName(account) {
-      return account.role == "Psychologist" ? account.name : account.username;
+      return account.role == "Psychologist"
+        ? account.name + " 💙"
+        : account.username;
     },
   },
 };

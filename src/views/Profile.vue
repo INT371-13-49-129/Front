@@ -49,14 +49,17 @@
         ref="post"
         class="xl:w-2/4 w-full xl:h-full px-3 xl:overflow-y-auto xl:pb-0 pb-12"
       >
-        <div class="flex justify-between xl:pt-4">
-          <div><b>Mood :</b> Today, 9 September 2022</div>
+        <div v-show="false" class="flex justify-between xl:pt-4">
+          <div><b>Mood</b></div>
           <div class="flex items-center">
             ทั้งหมด
             <i class="bx bx-chevron-right"></i>
           </div>
         </div>
-        <div class="flex mt-3 pb-1 xl:gap-7 gap-4 overflow-x-auto w-full">
+        <div
+          v-show="false"
+          class="flex mt-3 pb-1 xl:gap-7 gap-4 overflow-x-auto w-full"
+        >
           <div
             class="px-1 w-20 flex-shrink-0 rounded-2xl border-primary border-2 border-opacity-70 filter drop-shadow-all bg-white"
             v-for="i in 7"

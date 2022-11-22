@@ -139,6 +139,7 @@
         <div class="h-2"></div>
         <vs-button
           class="w-full button-login"
+          :disabled="text == '' && !refer_post.post_id"
           @click="
             text == '' && !refer_post.post_id
               ? ''

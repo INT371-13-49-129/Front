@@ -65,11 +65,7 @@
             ติดตาม
           </vs-button>
           <i
-            v-if="
-              isLogin &&
-              account_id != myAccount.account_id &&
-              (account.is_listener || account.role == 'Psychologist')
-            "
+            v-if="isLogin && account_id != myAccount.account_id"
             @click="$router.push('/messages/' + account.account_id)"
             class="bx bx-message-rounded-dots ml-1 text-2xl cursor-pointer text-primary"
           ></i>
@@ -165,8 +161,29 @@
       >
         * อีเมลไม่แสดงให้ผู้อื่นเห็น
       </div>
-      <div class="text-base py-2 border-t-2 border-b-2">โหมดผู้รับฟัง</div>
-      <div class="flex text-sm mt-3 items-center flex-wrap">
+      <div
+        v-if="
+          account.role != 'Psychologist' &&
+          (account.is_listener || account_id == myAccount.account_id)
+        "
+        class="text-base py-2 border-t-2 border-b-2"
+      >
+        โหมดผู้รับฟัง
+      </div>
+      <div
+        v-if="account.role == 'Psychologist'"
+        class="text-base py-2 border-t-2 border-b-2"
+      >
+        โหมดผู้เชี่ยวชาญ
+      </div>
+      <div
+        v-if="
+          account.is_listener ||
+          account_id == myAccount.account_id ||
+          account.role == 'Psychologist'
+        "
+        class="flex text-sm mt-3 items-center flex-wrap"
+      >
         <div class="text-sm mr-2">
           หัวข้อ : <span v-if="account.account_topics.length == 0">-</span>
         </div>
@@ -179,7 +196,24 @@
         </div>
       </div>
       <div
-        v-if="account.role != 'Psychologist'"
+        v-if="
+          account.role == 'Psychologist' &&
+          account.description &&
+          account.description != ''
+        "
+      >
+        <div class="text-base">คำอธิบาย</div>
+        <div
+          v-html="account.description.replace(/(?:\r\n|\r|\n)/g, '<br />')"
+          class="text-sm flex items-center mb-3 mt-1 pb-2"
+        ></div>
+      </div>
+      <div
+        v-if="
+          isLogin &&
+          account_id == myAccount.account_id &&
+          account.role != 'Psychologist'
+        "
         class="flex text-sm mt-3 items-center justify-between"
       >
         <div>พร้อมที่จะเป็นผู้รับฟัง</div>
@@ -363,6 +397,7 @@ export default {
     async getAccount() {
       if (this.isLogin && this.account_id == this.myAccount.account_id) {
         this.account = this.myAccount;
+        this.is_listener = this.myAccount.is_listener;
       } else {
         try {
           const res = await this.$store.dispatch(
@@ -437,6 +472,18 @@ export default {
       isLogin: "isLogin",
       myAccount: "getAccount",
     }),
+  },
+  watch: {
+    account_id() {
+      this.getAccount();
+    },
+    is_listener: async function () {
+      await this.$store.dispatch("updateAccountListener", {
+        is_listener: this.is_listener,
+      });
+      await this.$store.dispatch("getAccount");
+      this.getAccount();
+    },
   },
 };
 </script>
