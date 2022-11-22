@@ -185,7 +185,10 @@
             <div class="flex-grow">{{ account.email }}</div>
           </div>
         </div>
-        <div class="rounded-lg p-3 border-2 mt-4">
+        <div
+          v-if="account.role === 'Psychologist'"
+          class="rounded-lg p-3 border-2 mt-4"
+        >
           <div class="text-lg font-semibold">ข้อมูลผู้เชี่ยวชาญ</div>
           <div class="flex xl:flex-row flex-col xl:items-center py-4 w-full">
             <div class="w-32">ชื่อ</div>

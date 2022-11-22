@@ -1174,6 +1174,25 @@ export default new Vuex.Store({
       );
       return response;
     },
+    createReport(_, payload) {
+      const {
+        message,
+        account_id = null,
+        post_id = null,
+        comment_id = null,
+      } = payload;
+      let response = axios.post(
+        `${baseUrl()}/api/member/createReport`,
+        {
+          message,
+          account_id,
+          post_id,
+          comment_id,
+        },
+        authHeader()
+      );
+      return response;
+    },
     async uploadFile(_, payload) {
       let data = new FormData();
       data.append("img", payload);

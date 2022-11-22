@@ -329,11 +329,13 @@ export default {
         this.title = this.post.title;
         this.text = this.post.text;
         this.owner = this.post.owner;
-        this.tag_id = this.post.tag.tag_id;
+        this.tag_id = this.post.tag ? this.post.tag.tag_id : null;
         this.cover_image_url = this.post.cover_image_url;
-        this.imgs = this.post.img.map((i) => {
-          return { url: i, isNew: false };
-        });
+        this.imgs = this.post.img
+          ? this.post.img.map((i) => {
+              return { url: i, isNew: false };
+            })
+          : [];
         this.nameOwner = this.post.owner === this.account.name;
       } catch (error) {
         console.log(error);

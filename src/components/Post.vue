@@ -76,9 +76,12 @@
       </div>
     </div>
     <div
-      v-html="post.text.replace(/(?:\r\n|\r|\n)/g, '<br />')"
+      v-html="cutPost(post.text.replace(/(?:\r\n|\r|\n)/g, '<br />'))"
       class="mt-2 break-words"
     ></div>
+    <div v-if="short" @click="short = false" class="text-gray-500">
+      ดูเพิ่มเติม
+    </div>
     <div v-if="post.post_type == 'Article'" class="mt-2">
       บทความโดย: {{ post.owner }}
     </div>
@@ -252,6 +255,7 @@
         border
         block
         size="large"
+        @click="modalReport = true"
       >
         <i class="bx bxs-report mr-2"></i>รายงาน{{
           post.post_type == "Article" ? "บทความ" : "โพสต์"
@@ -454,6 +458,26 @@
         ></i>
       </div>
     </vs-dialog>
+    <vs-dialog v-model="modalReport">
+      <template #header>
+        <div class="mt-2 text-lg font-semibold">รายงาน</div>
+      </template>
+      <div class="mt-2">
+        <textarea
+          placeholder="รายละเอียด"
+          class="focus:outline-none w-full px-6 py-4 rounded-xl mt-1 scroll border-2 h-40"
+          v-model.trim="report"
+        ></textarea>
+      </div>
+      <div class="flex justify-center">
+        <vs-button
+          :disabled="report == ''"
+          @click="report == '' ? '' : createReport()"
+        >
+          <span class="mx-3">ส่ง</span>
+        </vs-button>
+      </div>
+    </vs-dialog>
   </div>
 </template>
 <script>
@@ -479,6 +503,9 @@ export default {
       img_show: [],
       img_show_index: 0,
       allRepost: [],
+      modalReport: false,
+      report: "",
+      short: this.$route.name !== "PostView",
     };
   },
   components: {
@@ -577,6 +604,59 @@ export default {
         this.post.post_id
       );
       this.modalRepost = true;
+    },
+    createReport() {
+      this.$store.dispatch("createReport", {
+        post_id: this.post.post_id,
+        message: this.report,
+      });
+      this.report = "";
+      this.modalReport = false;
+      this.$vs.notification({
+        progress: "auto",
+        flat: true,
+        color: "primary",
+        position: "top-right",
+        title: "ส่งรายงานสำเร็จ",
+      });
+    },
+    cutPost(text, maxLength = 500) {
+      if (text.length > maxLength && this.short) {
+        let currentLength = 0;
+        let output = "";
+        let tagStack = [];
+        let inTag = false;
+        let tag = "";
+        for (let i = 0; i < text.length; i++) {
+          if (text[i] == "<") {
+            inTag = true;
+            tag = "";
+          } else if (text[i] == ">") {
+            inTag = false;
+            if (tag[0] == "/") {
+              tagStack.pop();
+            } else {
+              tagStack.push(tag);
+            }
+          } else if (inTag) {
+            tag += text[i];
+          } else {
+            if (currentLength == maxLength) {
+              output += "<span class='see-more'>...<span>";
+              for (let j = tagStack.length - 1; j >= 0; j--) {
+                output += "</" + tagStack[j] + ">";
+              }
+              break;
+            }
+            output += text[i];
+            currentLength++;
+          }
+        }
+        return output;
+      } else {
+        this.short = false;
+        return text;
+      }
     },
   },
   computed: {
