@@ -3,7 +3,10 @@
     <div class="flex flex-col justify-around">
       <div class="flex justify-between">
         <div class="text-base font-semibold">ผู้รับฟัง</div>
-        <div class="flex items-center">
+        <div
+          @click="$router.push({ name: 'Listener' })"
+          class="flex items-center cursor-pointer"
+        >
           ทั้งหมด
           <i class="bx bx-chevron-right"></i>
         </div>
@@ -11,9 +14,8 @@
       <div class="flex mt-2 overflow-x-auto pb-4 border-b-2 border-gray-100">
         <div
           class="flex flex-col items-center w-28 mx-1"
-          v-for="ac in allAccount"
+          v-for="ac in allAccountIsListener.accounts"
           :key="ac.account_id"
-          v-show="ac.account_id != account.account_id"
         >
           <vs-avatar
             class="cursor-pointer flex-shrink-0"
@@ -39,7 +41,10 @@
           class="flex my-2 items-center cursor-pointer"
           v-for="messageConnect in allMessageConnect"
           :key="messageConnect.message_connect_id"
-          v-show="messageConnect.messages.length != 0"
+          v-show="
+            messageConnect.message_connect_status !== 'inactive' ||
+            messageConnect.messages.length > 0
+          "
           @click="toMessage(getOtherAccount(messageConnect).account_id)"
         >
           <vs-avatar class="flex-shrink-0" circle>
@@ -57,20 +62,33 @@
             <div
               class="w-full flex text-sm"
               :class="
-                !getLastMessages(messageConnect).is_read &&
-                getLastMessages(messageConnect).account_id != account.account_id
+                (!getLastMessages(messageConnect).is_read &&
+                  getLastMessages(messageConnect).account_id !=
+                    account.account_id) ||
+                messageConnect.message_connect_status == 'waiting'
                   ? 'text-black font-medium'
                   : ' text-gray-400'
               "
             >
-              <div class="mr-2 flex-shrink truncate">
+              <div
+                v-if="messageConnect.message_connect_status == 'waiting'"
+                class="mr-2 flex-shrink truncate"
+              >
+                <span>คำขอส่งข้อความ</span>
+              </div>
+              <div v-else class="mr-2 flex-shrink truncate">
                 <span v-if="getLastMessages(messageConnect).image_url"
                   >ได้ส่งรูปภาพ</span
                 >
                 <span v-else>{{ getLastMessages(messageConnect).text }}</span>
               </div>
               <div>
-                · {{ getTime(getLastMessages(messageConnect).createdAt) }}
+                ·
+                {{
+                  messageConnect.message_connect_status == "waiting"
+                    ? getTime(messageConnect.last_messages)
+                    : getTime(getLastMessages(messageConnect).createdAt)
+                }}
               </div>
             </div>
           </div>
@@ -100,7 +118,10 @@ export default {
   methods: {
     async getData() {
       await this.$store.dispatch("getAllMessageConnect");
-      await this.$store.dispatch("getAllAccount");
+      await this.$store.dispatch("getAllAccountIsListenerPagination", {
+        page: 1,
+        limit: 20,
+      });
     },
     getOtherAccount(messageConnect) {
       if (messageConnect.account_1.account_id == this.account.account_id) {
@@ -157,7 +178,7 @@ export default {
       isLogin: "isLogin",
       account: "getAccount",
       allMessageConnect: "getAllMessageConnect",
-      allAccount: "getAllAccount",
+      allAccountIsListener: "getAllAccountIsListener",
     }),
   },
 };

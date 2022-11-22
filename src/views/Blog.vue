@@ -10,45 +10,8 @@
       <div class="flex items-center mb-2 mt-4">
         <div class="text-lg font-semibold">แนะนำ</div>
       </div>
-      <div
-        class="xl:flex items-center pt-3 pb-4 border-b-2 justify-center hidden"
-      >
-        <div class="xl:w-1/3 w-full xl:px-3 h-80 py-1">
-          <ArticleShow
-            class="w-full h-full"
-            :post="allPostArticleRecommend[0]"
-          ></ArticleShow>
-        </div>
-        <div class="xl:w-2/3 flex flex-wrap h-80">
-          <div
-            class="xl:w-1/2 xl:h-1/2 xl:px-3 w-full py-2"
-            v-for="(post, i) in allPostArticleRecommend.slice(1)"
-            :key="i"
-            v-show="i < 4"
-          >
-            <ArticleShow
-              class="w-full h-full"
-              :post="post"
-              :horizontal="true"
-            ></ArticleShow>
-          </div>
-        </div>
-      </div>
-      <div class="xl:hidden">
-        <carousel
-          :per-page="1"
-          class="flex items-center pt-3 pb-2 border-b-2 justify-center"
-        >
-          <slide
-            class="w-full h-80 px-2 py-0.5"
-            v-for="(post, i) in allPostArticleRecommend"
-            :key="i"
-            v-show="i < 5"
-          >
-            <ArticleShow class="w-full h-full" :post="post"></ArticleShow>
-          </slide>
-        </carousel>
-      </div>
+      <ArticleRecommend></ArticleRecommend>
+
       <div class="flex py-3 items-center xl:justify-end">
         <div
           class="filter drop-shadow-all rounded-full bg-white flex items-center xl:w-auto xl:flex-grow-0 flex-grow"
@@ -204,6 +167,7 @@
 import { mapGetters } from "vuex";
 import NavbarSidebar from "@/components/NavbarSidebar.vue";
 import ArticleShow from "@/components/ArticleShow.vue";
+import ArticleRecommend from "@/components/ArticleRecommend.vue";
 import mixin from "@/mixin/mixin.js";
 
 export default {
@@ -227,6 +191,7 @@ export default {
   components: {
     NavbarSidebar,
     ArticleShow,
+    ArticleRecommend,
   },
   methods: {
     async changeLimit() {
@@ -291,7 +256,6 @@ export default {
   },
   async mounted() {
     const loading = this.$vs.loading();
-    await this.$store.dispatch("getAllPostArticleRecommendPagination", {});
     await this.getPost();
     await this.$store.dispatch("getAllTag");
     loading.close();
@@ -302,7 +266,6 @@ export default {
       account: "getAccount",
       allTag: "getAllTag",
       allPostArticle: "getAllPostArticle",
-      allPostArticleRecommend: "getAllPostArticleRecommend",
     }),
   },
   watch: {

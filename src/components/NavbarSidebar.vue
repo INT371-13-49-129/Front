@@ -51,11 +51,11 @@
           <div
             class="rounded-full mx-2 w-10 h-10 flex justify-center items-center cursor-pointer"
             :class="
-              active == 'Article'
+              active == 'Heal'
                 ? 'bg-primary bg-opacity-10 text-primary'
                 : 'hover:bg-primary hover:bg-opacity-10 hover:text-primary'
             "
-            @click="$router.push({ name: 'Article' })"
+            @click="$router.push({ name: 'Heal' })"
           >
             <i class="bx bx-donate-heart text-3xl"></i>
           </div>
@@ -83,6 +83,7 @@
           </div>
           <div
             class="rounded-full mx-2 w-10 h-10 flex justify-center items-center"
+            v-show="false"
           >
             <i class="bx bx-bell text-3xl"></i>
           </div>
@@ -116,11 +117,11 @@
         <div
           class="rounded-full mx-2 w-10 h-10 flex justify-center items-center cursor-pointer"
           :class="
-            active == 'Article'
+            active == 'Heal'
               ? 'bg-primary bg-opacity-10 text-primary'
               : 'hover:bg-primary hover:bg-opacity-10 hover:text-primary'
           "
-          @click="$router.push({ name: 'Article' })"
+          @click="$router.push({ name: 'Heal' })"
         >
           <i class="bx bx-donate-heart text-3xl"></i>
         </div>
@@ -148,6 +149,7 @@
         </div>
         <div
           class="rounded-full mx-2 w-10 h-10 flex justify-center items-center"
+          v-show="false"
         >
           <i class="bx bx-bell text-3xl"></i>
         </div>
@@ -243,8 +245,8 @@ export default {
         return "Messages";
       } else if (this.$route.name == "MoodDiary") {
         return "MoodDiary";
-      } else if (this.$route.name == "Article") {
-        return "Article";
+      } else if (this.$route.name == "Heal") {
+        return "Heal";
       } else {
         return "";
       }

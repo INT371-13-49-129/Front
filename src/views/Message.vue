@@ -44,6 +44,82 @@
           ref="message"
         >
           <div
+            v-if="
+              messageCon.message_connect_status == 'inactive' &&
+              !getOtherAccount.is_listener &&
+              getOtherAccount.role != 'Psychologist'
+            "
+            class="flex items-center flex-col"
+          >
+            <div class="p-3 bg-gray-50 border-2 rounded-2xl my-2 text-gray-600">
+              บัญชีผู้ใช้นี่ไม่ได้เปิดเป็นผู้รับฟัง
+              หากต้องการส่งข้อความกรุณาส่งคำขอส่งข้อความ
+            </div>
+            <vs-button
+              class="w-full xl:w-1/3 text-base py-2"
+              border
+              @click="modalRequest = true"
+            >
+              คำขอส่งข้อความ</vs-button
+            >
+          </div>
+          <div
+            v-if="messageCon.message_connect_status == 'waiting'"
+            class="flex items-center flex-col"
+          >
+            <div
+              class="p-3 bg-primary bg-opacity-10 rounded-2xl my-2 text-gray-700 w-full"
+            >
+              <div class="border-b-2 pb-2 mb-2">คำขอส่งข้อความ</div>
+              <div>{{ req.text }}</div>
+            </div>
+            <vs-button
+              class="w-full xl:w-1/3 text-base py-2"
+              border
+              v-if="account.account_id == req.account_id"
+              @click="(modalRequest = true), (request = req.text)"
+            >
+              แก้ไขคำขอส่งข้อความ</vs-button
+            >
+            <div v-else class="flex xl:flex-row flex-col w-full xl:gap-x-3">
+              <vs-button
+                class="w-auto xl:w-1/2 text-base py-2"
+                @click="acceptRequest()"
+                border
+              >
+                ยอมรับคำขอ</vs-button
+              >
+              <vs-button
+                class="w-auto xl:w-1/2 text-base py-2"
+                @click="rejectRequest()"
+                border
+                danger
+              >
+                ลบ</vs-button
+              >
+            </div>
+          </div>
+          <div
+            v-if="
+              messageCon.message_connect_status == 'inactive' &&
+              (getOtherAccount.is_listener ||
+                getOtherAccount.role == 'Psychologist')
+            "
+            class="flex items-center flex-col"
+          >
+            <div class="p-3 bg-gray-50 border-2 rounded-2xl my-2 text-gray-600">
+              การส่งข้อความถูกปิดไว้
+              หากต้องการส่งข้อความสามารถเปิดการส่งข้อความได้
+            </div>
+            <vs-button
+              class="w-full xl:w-1/3 text-base py-2"
+              border
+              @click="activateMessageConnect()"
+            >
+              เปิดการส่งข้อความ</vs-button
+            >
+          </div>
+          <div
             v-for="(message, i) in messageCon.messages"
             :key="message.message_id"
           >
@@ -117,13 +193,16 @@
               :class="isVisible ? 'animate-spin' : ''"
             ></i>
           </div>
-          <div v-else class="flex justify-center items-center gap-2">
+          <div
+            v-else-if="messageCon.messages.length > 0"
+            class="flex justify-center items-center gap-2"
+          >
             <div class="flex-grow border-b-2"></div>
             <div class="text-gray-400">เริ่มการสนทนา</div>
             <div class="flex-grow border-b-2"></div>
           </div>
         </div>
-        <div class="flex items-center w-full">
+        <div class="flex items-center w-full relative">
           <label for="url" class="cursor-pointer">
             <i class="bx bx-image text-4xl text-primary"></i>
           </label>
@@ -150,16 +229,21 @@
               >Send</span
             ></vs-button
           >
+          <div
+            v-if="messageCon.message_connect_status != 'active'"
+            class="absolute w-full h-full bg-white opacity-60 z-10"
+          ></div>
         </div>
       </div>
       <div
         v-show="showProfile && getOtherAccount.account_id"
-        class="xl:block hidden w-1/4"
+        class="xl:block hidden w-1/4 h-95/100"
       >
         <DataProfile
           :key="getOtherAccount.account_id"
           v-if="getOtherAccount.account_id"
           ref="dataProfile"
+          class="h-full overflow-scroll"
           :account_id="getOtherAccount.account_id"
         ></DataProfile>
       </div>
@@ -220,9 +304,38 @@
         >
           <i class="bx bx-star mr-2"></i>ให้คะแนนและรีวิว
         </vs-button>
+        <vs-button
+          shadow
+          block
+          border
+          v-if="messageCon.message_connect_status == 'active'"
+          @click="deactivateMessageConnect()"
+          size="large"
+        >
+          ปิดการส่งข้อความ
+        </vs-button>
         <vs-button danger border block size="large">
           <i class="bx bxs-report mr-2"></i>รายงานการสนทนา
         </vs-button>
+      </vs-dialog>
+      <vs-dialog v-model="modalRequest">
+        <template #header>
+          <div class="mt-2 text-lg font-semibold">คำขอส่งข้อความ</div>
+        </template>
+        <div class="mt-2">
+          <textarea
+            class="focus:outline-none w-full px-6 py-4 rounded-xl mt-1 scroll border-2 h-40"
+            v-model.trim="request"
+          ></textarea>
+        </div>
+        <div class="flex justify-center">
+          <vs-button
+            :disabled="request == ''"
+            @click="request == '' ? '' : createRequest()"
+          >
+            <span class="mx-3">ส่งคำขอ</span>
+          </vs-button>
+        </div>
       </vs-dialog>
     </div>
   </div>
@@ -252,6 +365,9 @@ export default {
       isVisible: false,
       showProfile: false,
       modalActive: false,
+      modalRequest: false,
+      request: "",
+      req: {},
     };
   },
   components: {
@@ -287,6 +403,16 @@ export default {
           this.lastMessage = false;
           this.toTop();
         }
+        if (this.messageCon.message_connect_status == "waiting") {
+          const req = await this.$store.dispatch(
+            "getRequest",
+            this.messageCon.message_connect_id
+          );
+          if (req.data) {
+            this.req = req.data.request;
+            this.request = this.req.text;
+          }
+        }
         const messages = this.messageCon.messages;
         for (let i = 0; i < messages.length; i++) {
           const message = messages[i];
@@ -300,7 +426,6 @@ export default {
         return res;
       } catch (error) {
         console.log(error);
-        this.$router.push("/messages");
         return null;
       }
     },
@@ -355,6 +480,34 @@ export default {
       this.showProfile = true;
       this.modalActive = false;
       this.$refs.dataProfile.showModalReview();
+    },
+    createRequest() {
+      this.$store.dispatch("createRequest", {
+        message_connect_id: this.messageCon.message_connect_id,
+        text: this.request,
+      });
+      this.modalRequest = false;
+    },
+    acceptRequest() {
+      this.$store.dispatch("acceptRequest", {
+        message_connect_id: this.messageCon.message_connect_id,
+      });
+    },
+    rejectRequest() {
+      this.$store.dispatch("rejectRequest", {
+        message_connect_id: this.messageCon.message_connect_id,
+      });
+    },
+    activateMessageConnect() {
+      this.$store.dispatch("activateMessageConnect", {
+        message_connect_id: this.messageCon.message_connect_id,
+      });
+    },
+    deactivateMessageConnect() {
+      this.$store.dispatch("deactivateMessageConnect", {
+        message_connect_id: this.messageCon.message_connect_id,
+      });
+      this.modalActive = false;
     },
   },
   async mounted() {
