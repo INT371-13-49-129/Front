@@ -151,6 +151,15 @@ const routes = [
       next({ name: "Home" });
     },
   },
+  {
+    path: "/admin/ManageReport",
+    name: "ManageReport",
+    component: () => import("../views/admin/ManageReport.vue"),
+    meta: {
+      auth: true,
+      authAdmin: true,
+    },
+  },
 ];
 
 const router = new VueRouter({
@@ -178,6 +187,13 @@ router.beforeEach(async (to, from, next) => {
     to.meta.authPsychologist &&
     !store.getters.isLogin &&
     store.getters.account.role != "Psychologist"
+  ) {
+    next({ path: "/" });
+  }
+  if (
+    to.meta.authAdmin &&
+    !store.getters.isLogin &&
+    store.getters.account.role != "Admin"
   ) {
     next({ path: "/" });
   }

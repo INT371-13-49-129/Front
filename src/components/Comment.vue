@@ -182,6 +182,9 @@
         border
         block
         size="large"
+        @click="
+          (modalReport = true), (report_comment_id = selectComment.comment_id)
+        "
       >
         <i class="bx bxs-report mr-2"></i>รายงาน Comment
       </vs-button>
@@ -270,6 +273,26 @@
         ยกเลิก
       </vs-button>
     </vs-dialog>
+    <vs-dialog v-model="modalReport">
+      <template #header>
+        <div class="mt-2 text-lg font-semibold">รายงาน Comment</div>
+      </template>
+      <div class="mt-2">
+        <textarea
+          placeholder="รายละเอียด"
+          class="focus:outline-none w-full px-6 py-4 rounded-xl mt-1 scroll border-2 h-40"
+          v-model.trim="report"
+        ></textarea>
+      </div>
+      <div class="flex justify-center">
+        <vs-button
+          :disabled="report == ''"
+          @click="report == '' ? '' : createReport()"
+        >
+          <span class="mx-3">ส่ง</span>
+        </vs-button>
+      </div>
+    </vs-dialog>
   </div>
 </template>
 <script>
@@ -312,6 +335,9 @@ export default {
       editComment: "",
       modalLogEdit: false,
       modalDelete: false,
+      modalReport: false,
+      report: "",
+      report_comment_id: "",
     };
   },
   methods: {
@@ -392,6 +418,21 @@ export default {
       } catch (error) {
         console.log(error);
       }
+    },
+    createReport() {
+      this.$store.dispatch("createReport", {
+        comment_id: this.report_comment_id,
+        message: this.report,
+      });
+      this.report = "";
+      this.modalReport = false;
+      this.$vs.notification({
+        progress: "auto",
+        flat: true,
+        color: "primary",
+        position: "top-right",
+        title: "ส่งรายงาน Comment สำเร็จ",
+      });
     },
   },
   computed: {

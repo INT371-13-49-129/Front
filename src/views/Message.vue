@@ -314,7 +314,7 @@
         >
           ปิดการส่งข้อความ
         </vs-button>
-        <vs-button danger border block size="large">
+        <vs-button danger border block size="large" @click="modalReport = true">
           <i class="bx bxs-report mr-2"></i>รายงานการสนทนา
         </vs-button>
       </vs-dialog>
@@ -334,6 +334,26 @@
             @click="request == '' ? '' : createRequest()"
           >
             <span class="mx-3">ส่งคำขอ</span>
+          </vs-button>
+        </div>
+      </vs-dialog>
+      <vs-dialog v-model="modalReport">
+        <template #header>
+          <div class="mt-2 text-lg font-semibold">รายงานการสนทนา</div>
+        </template>
+        <div class="mt-2">
+          <textarea
+            placeholder="รายละเอียด"
+            class="focus:outline-none w-full px-6 py-4 rounded-xl mt-1 scroll border-2 h-40"
+            v-model.trim="report"
+          ></textarea>
+        </div>
+        <div class="flex justify-center">
+          <vs-button
+            :disabled="report == ''"
+            @click="report == '' ? '' : createReport()"
+          >
+            <span class="mx-3">ส่ง</span>
           </vs-button>
         </div>
       </vs-dialog>
@@ -368,6 +388,8 @@ export default {
       modalRequest: false,
       request: "",
       req: {},
+      modalReport: false,
+      report: "",
     };
   },
   components: {
@@ -508,6 +530,21 @@ export default {
         message_connect_id: this.messageCon.message_connect_id,
       });
       this.modalActive = false;
+    },
+    createReport() {
+      this.$store.dispatch("createReport", {
+        account_id: this.account_id,
+        message: this.report,
+      });
+      this.report = "";
+      this.modalReport = false;
+      this.$vs.notification({
+        progress: "auto",
+        flat: true,
+        color: "primary",
+        position: "top-right",
+        title: "ส่งรายงานการสนทนาสำเร็จ",
+      });
     },
   },
   async mounted() {
