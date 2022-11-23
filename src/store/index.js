@@ -1203,6 +1203,33 @@ export default new Vuex.Store({
       );
       return response;
     },
+    async getAllAccountRequestPsychologist() {
+      let response = await axios.get(
+        `${baseUrl()}/api/admin/getAllAccountRequestPsychologist`,
+        authHeader()
+      );
+      return response.data.data;
+    },
+    async approveRequestPsychologist(_, payload) {
+      let response = await axios.put(
+        `${baseUrl()}/api/admin/approveRequestPsychologist`,
+        {
+          account_id: payload,
+        },
+        authHeader()
+      );
+      return response;
+    },
+    async rejectRequestPsychologist(_, payload) {
+      let response = await axios.put(
+        `${baseUrl()}/api/admin/rejectRequestPsychologist`,
+        {
+          account_id: payload,
+        },
+        authHeader()
+      );
+      return response;
+    },
   },
   modules: {},
 });
