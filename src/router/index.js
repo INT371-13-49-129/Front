@@ -145,19 +145,28 @@ const routes = [
     component: () => import("../views/Blog.vue"),
   },
   {
-    path: "/:catchAll(.*)",
-    name: "NotFound",
-    beforeEnter: (to, from, next) => {
-      next({ name: "Home" });
-    },
-  },
-  {
     path: "/admin/ManageReport",
     name: "ManageReport",
     component: () => import("../views/admin/ManageReport.vue"),
     meta: {
       auth: true,
       authAdmin: true,
+    },
+  },
+  {
+    path: "/admin/ManageRequestPsychologist",
+    name: "ManageRequestPsychologist",
+    component: () => import("../views/admin/ManageRequestPsychologist.vue"),
+    meta: {
+      auth: true,
+      authAdmin: true,
+    },
+  },
+  {
+    path: "/:catchAll(.*)",
+    name: "NotFound",
+    beforeEnter: (to, from, next) => {
+      next({ name: "Home" });
     },
   },
 ];

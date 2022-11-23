@@ -70,16 +70,21 @@
       class="bg-blue-100 bg-opacity-50 flex flex-col-reverse flex-shrink-0 w-full xl:h-52 h-40 rounded-2xl my-2"
     >
       <div
+        v-show="post.tag"
         class="xl:w-1/3 w-1/2 h-7 bg-blue-400 mb-3 rounded-r-lg text-white flex items-center overflow-hidden text-xs px-1"
       >
         <div class="truncate">{{ post.tag ? post.tag.name : "" }}</div>
       </div>
     </div>
     <div
-      v-html="cutPost(post.text.replace(/(?:\r\n|\r|\n)/g, '<br />'))"
+      v-html="cutPost(post.text).replace(/(?:\r\n|\r|\n)/g, '<br />')"
       class="mt-2 break-words"
     ></div>
-    <div v-if="short" @click="short = false" class="text-gray-500">
+    <div
+      v-if="short"
+      @click="short = false"
+      class="text-gray-500 cursor-pointer"
+    >
       ดูเพิ่มเติม
     </div>
     <div v-if="post.post_type == 'Article'" class="mt-2">
@@ -621,38 +626,12 @@ export default {
       });
     },
     cutPost(text, maxLength = 500) {
-      if (text.length > maxLength && this.short) {
-        let currentLength = 0;
-        let output = "";
-        let tagStack = [];
-        let inTag = false;
-        let tag = "";
-        for (let i = 0; i < text.length; i++) {
-          if (text[i] == "<") {
-            inTag = true;
-            tag = "";
-          } else if (text[i] == ">") {
-            inTag = false;
-            if (tag[0] == "/") {
-              tagStack.pop();
-            } else {
-              tagStack.push(tag);
-            }
-          } else if (inTag) {
-            tag += text[i];
-          } else {
-            if (currentLength == maxLength) {
-              output += "<span class='see-more'>...<span>";
-              for (let j = tagStack.length - 1; j >= 0; j--) {
-                output += "</" + tagStack[j] + ">";
-              }
-              break;
-            }
-            output += text[i];
-            currentLength++;
-          }
-        }
-        return output;
+      if (
+        text.length > maxLength &&
+        this.short &&
+        this.post.post_type == "Post"
+      ) {
+        return text.substring(0, maxLength) + "...";
       } else {
         this.short = false;
         return text;

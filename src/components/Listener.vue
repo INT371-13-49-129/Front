@@ -6,23 +6,28 @@
       <img v-if="account.image_url" :src="getFile(account.image_url)" alt="" />
       <i v-else class="bx bx-user"></i>
     </vs-avatar>
-    <div class="flex-grow ml-1">
+    <div class="w-4/6 ml-1">
       <div
         class="truncate text-sm font-semibold mt-1 mb-2 hover:underline cursor-pointer"
         @click.stop="$router.push('/profile/' + account.account_id)"
       >
         {{ getName(account) }}
       </div>
-      <div class="truncate text-xs mb-1">
-        <span v-for="act in account.account_topics" :key="act.account_topic_id">
-          #{{ act.topic.name }} ,
+      <div class="truncate text-xs mb-1 w-full">
+        <span
+          class="mr-2"
+          v-for="act in account.account_topics"
+          :key="act.account_topic_id"
+        >
+          #{{ act.topic.name }}
         </span>
-        <div v-if="account.account_topics.length == 0">พูดคุย ระบาย</div>
+        <span v-if="account.account_topics.length == 0">พูดคุย ระบาย</span>
       </div>
     </div>
+    <div class="w-full"></div>
     <i
       @click="$router.push('/messages/' + account.account_id)"
-      class="bx bx-message-rounded-dots ml-1 text-2xl cursor-pointer"
+      class="bx bx-message-rounded-dots ml-1 text-2xl cursor-pointer flex-shrink-0"
     ></i>
   </div>
 </template>

@@ -17,6 +17,7 @@
       :class="horizontal ? 'w-32 mr-2' : 'w-full h-1/3 rounded-2xl'"
     >
       <div
+        v-show="post.tag"
         class="w-1/2 h-7 bg-blue-400 mb-3 rounded-r-lg text-white flex items-center overflow-hidden text-xs px-1"
         :class="horizontal ? 'w-5/6' : 'w-1/2'"
       >
