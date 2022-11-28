@@ -1230,6 +1230,13 @@ export default new Vuex.Store({
       );
       return response;
     },
+    async getAllReport() {
+      let response = await axios.get(
+        `${baseUrl()}/api/admin/getAllReport`,
+        authHeader()
+      );
+      return response.data.reports;
+    },
   },
   modules: {},
 });

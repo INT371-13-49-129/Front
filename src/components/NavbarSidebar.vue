@@ -83,9 +83,20 @@
           </div>
           <div
             class="rounded-full mx-2 w-10 h-10 flex justify-center items-center"
-            v-show="false"
           >
             <i class="bx bx-bell text-3xl"></i>
+          </div>
+          <div
+            v-if="account && account.role == 'Admin'"
+            class="rounded-full mx-2 w-10 h-10 flex justify-center items-center cursor-pointer"
+            :class="
+              active == 'Admin'
+                ? 'bg-primary bg-opacity-10 text-primary'
+                : 'hover:bg-primary hover:bg-opacity-10 hover:text-primary'
+            "
+            @click="modalAdmin = true"
+          >
+            <i class="bx bx-candles text-3xl"></i>
           </div>
         </div>
         <vs-avatar circle class="my-2 ml-2">
@@ -149,9 +160,20 @@
         </div>
         <div
           class="rounded-full mx-2 w-10 h-10 flex justify-center items-center"
-          v-show="false"
         >
           <i class="bx bx-bell text-3xl"></i>
+        </div>
+        <div
+          v-if="account && account.role == 'Admin'"
+          class="rounded-full mx-2 w-10 h-10 flex justify-center items-center cursor-pointer"
+          :class="
+            active == 'Admin'
+              ? 'bg-primary bg-opacity-10 text-primary'
+              : 'hover:bg-primary hover:bg-opacity-10 hover:text-primary'
+          "
+          @click="modalAdmin = true"
+        >
+          <i class="bx bx-candles text-3xl"></i>
         </div>
       </div>
     </div>
@@ -210,6 +232,34 @@
         </div>
       </div>
     </vs-dialog>
+    <vs-dialog v-model="modalAdmin">
+      <div>
+        <div class="flex items-center">
+          <vs-avatar circle class="my-2 ml-2">
+            <i class="bx bx-user"></i>
+          </vs-avatar>
+          <div class="ml-3 font-semibold text-lg">Admin</div>
+        </div>
+        <div
+          class="mt-2 ml-2 flex items-center border-t-2 border-b-2 py-2 hover:bg-blue-50 cursor-pointer"
+          @click="$router.push({ name: 'ManageReport' })"
+        >
+          <i class="bx bxs-report text-3xl"></i>
+          <div class="ml-3 font-semibold text-lg text-gray-700">
+            Manage Report
+          </div>
+        </div>
+        <div
+          class="ml-2 flex items-center border-b-2 py-2 hover:bg-blue-50 cursor-pointer"
+          @click="$router.push({ name: 'ManageRequestPsychologist' })"
+        >
+          <i class="bx bx-user-check text-3xl"></i>
+          <div class="ml-3 font-semibold text-lg text-gray-700">
+            Manage Request Psychologist
+          </div>
+        </div>
+      </div>
+    </vs-dialog>
   </div>
 </template>
 <script>
@@ -222,6 +272,7 @@ export default {
     return {
       modalAccountShow: false,
       searchInput: "",
+      modalAdmin: false,
     };
   },
   methods: {
@@ -247,6 +298,11 @@ export default {
         return "MoodDiary";
       } else if (this.$route.name == "Heal") {
         return "Heal";
+      } else if (
+        this.$route.name == "ManageReport" ||
+        this.$route.name == "ManageRequestPsychologist"
+      ) {
+        return "Admin";
       } else {
         return "";
       }
